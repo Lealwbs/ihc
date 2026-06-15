@@ -1,0 +1,3353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vizinhança+ · Economia Colaborativa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #2D6A1F;
+    --verde-claro: #4A9636;
+    --verde-bg: #EFF6EB;
+    --ambar: #D97706;
+    --ambar-claro: #FEF3C7;
+    --ambar-xp: #F59E0B;
+    --creme: #FAFAF7;
+    --cinza-1: #F3F3F0;
+    --cinza-2: #E5E5E0;
+    --cinza-3: #A8A8A0;
+    --cinza-texto: #4A4A45;
+    --escuro: #1C1C1A;
+    --branco: #FFFFFF;
+    --vermelho: #DC2626;
+    --vermelho-bg: #FEF2F2;
+    --azul: #2563EB;
+    --roxo: #7C3AED;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--creme);
+    color: var(--escuro);
+    min-height: 100vh;
+  }
+
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--branco);
+    border-bottom: 1px solid var(--cinza-2);
+    padding: 0 16px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .topbar-logo { font-size: 18px; font-weight: 800; color: var(--verde); letter-spacing: -.5px; }
+  .topbar-logo span { color: var(--ambar); }
+  .topbar-back {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--cinza-1);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    border: none;
+    transition: background .15s;
+    color: var(--escuro);
+  }
+  .topbar-back:hover { background: var(--cinza-2); }
+  .topbar-title { font-weight: 600; font-size: 15px; }
+  .topbar-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--verde);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+    cursor: pointer;
+    border: none;
+  }
+
+  .content {
+    flex: 1;
+    padding: 0 16px 100px;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* BOTTOM NAV */
+  .bottomnav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--branco);
+    border-top: 1px solid var(--cinza-2);
+    display: flex;
+    height: 60px;
+    z-index: 100;
+  }
+  .bottomnav-item {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--cinza-3);
+    border: none; background: none;
+    transition: color .15s;
+    position: relative;
+  }
+  .bottomnav-item.active { color: var(--verde); }
+  .bottomnav-item svg { width: 22px; height: 22px; }
+  .nav-badge {
+    position: absolute;
+    top: 6px; right: calc(50% - 18px);
+    background: var(--vermelho);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    border-radius: 10px;
+    padding: 1px 5px;
+    min-width: 16px;
+    text-align: center;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600; font-size: 15px;
+    padding: 13px 20px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+    width: 100%;
+  }
+  .btn-primary { background: var(--verde); color: #fff; }
+  .btn-primary:hover { background: var(--verde-claro); }
+  .btn-secondary { background: var(--cinza-1); color: var(--escuro); }
+  .btn-secondary:hover { background: var(--cinza-2); }
+  .btn-outline { background: transparent; color: var(--verde); border: 1.5px solid var(--verde); }
+  .btn-ambar { background: var(--ambar); color: #fff; }
+  .btn-danger { background: var(--vermelho-bg); color: var(--vermelho); border: 1.5px solid #FECACA; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; width: auto; border-radius: 8px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--cinza-texto); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%; padding: 13px 14px;
+    border: 1.5px solid var(--cinza-2);
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--escuro);
+    background: var(--branco);
+    transition: border-color .15s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .form-input:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(45,106,31,.1); }
+  .form-input::placeholder { color: var(--cinza-3); }
+  .form-input:focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; }
+  textarea.form-input { resize: none; }
+  .form-error { color: var(--vermelho); font-size: 12px; margin-top: 4px; display: none; }
+  .form-error.show { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--branco);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid var(--cinza-2);
+    margin-bottom: 12px;
+    transition: box-shadow .15s;
+  }
+  .card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  .card-clickable { cursor: pointer; }
+
+  /* TAGS / BADGES */
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+  }
+  .tag-verde { background: var(--verde-bg); color: var(--verde); }
+  .tag-ambar { background: var(--ambar-claro); color: #92400E; }
+  .tag-cinza { background: var(--cinza-1); color: var(--cinza-texto); }
+  .tag-red { background: var(--vermelho-bg); color: var(--vermelho); }
+
+  /* AVATAR */
+  .avatar {
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .av-verde { background: var(--verde); }
+  .av-azul { background: #2563EB; }
+  .av-roxo { background: #7C3AED; }
+  .av-laranja { background: #EA580C; }
+  .av-teal { background: #0F766E; }
+
+  /* XP BAR */
+  .xp-bar-wrap { background: var(--cinza-2); border-radius: 20px; height: 8px; overflow: hidden; margin: 6px 0; }
+  .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--ambar-xp), #FCD34D); border-radius: 20px; transition: width 1s ease; }
+
+  .divider { height: 1px; background: var(--cinza-2); margin: 16px 0; }
+  .section-title { font-size: 12px; font-weight: 700; color: var(--cinza-3); text-transform: uppercase; letter-spacing: .8px; margin: 20px 0 10px; }
+
+  /* MATCH LINE */
+  .match-line {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 10px 12px;
+    background: var(--verde-bg);
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  .match-pill {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+  .mp-oferta { background: var(--verde); color: #fff; }
+  .mp-demanda { background: var(--ambar); color: #fff; }
+  .match-arrow { color: var(--verde); font-weight: 700; }
+
+  /* SEAL */
+  .seal {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 10px;
+    background: var(--ambar-claro);
+    border-radius: 10px;
+    font-size: 10px; font-weight: 700; color: #92400E;
+    text-align: center;
+    border: 1.5px solid transparent;
+    transition: border-color .15s;
+  }
+  .seal .seal-icon { font-size: 22px; }
+  .seal.selected { border-color: var(--ambar); }
+  .seal-locked { opacity: .4; filter: grayscale(1); }
+
+  /* AVATAR */
+  .avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; flex-shrink: 0; }
+
+  /* LEVEL BADGE */
+  .level-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px;
+    background: linear-gradient(135deg, var(--ambar-xp), #FCD34D);
+    border-radius: 20px;
+    font-size: 12px; font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.2);
+  }
+
+  /* PROFILE HERO */
+  .profile-hero {
+    background: linear-gradient(135deg, var(--verde) 0%, #3D8B2F 100%);
+    padding: 24px 16px 32px;
+    color: #fff;
+    text-align: center;
+  }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
+    background: var(--escuro); color: #fff;
+    padding: 10px 20px; border-radius: 24px;
+    font-size: 14px; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s;
+    z-index: 9999; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+
+  /* ONBOARDING */
+  .onboard-hero {
+    background: linear-gradient(160deg, #1a4a10 0%, var(--verde) 40%, var(--verde-claro) 100%);
+    min-height: 260px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 48px 24px 36px;
+    color: #fff;
+    text-align: center;
+  }
+  .onboard-hero .logo { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
+  .onboard-hero .logo span { color: var(--ambar-xp); }
+  .onboard-hero p { font-size: 15px; opacity: .85; margin-top: 10px; line-height: 1.6; }
+  .onboard-illustration { font-size: 64px; margin-bottom: 14px; }
+
+  /* CHIPS */
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--cinza-2);
+    background: var(--branco);
+    cursor: pointer;
+    transition: all .15s;
+    user-select: none;
+  }
+  .chip.selected { background: var(--verde); color: #fff; border-color: var(--verde); }
+  .chip:focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; }
+
+  /* STEP DOTS */
+  .step-dots { display: flex; gap: 6px; justify-content: center; margin: 16px 0; }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cinza-2); transition: all .2s; }
+  .step-dot.active { width: 24px; border-radius: 4px; background: var(--verde); }
+
+  /* INPUT WITH ICON */
+  .input-icon-wrap { position: relative; }
+  .input-icon-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--cinza-3); }
+  .input-icon-wrap .form-input { padding-left: 38px; }
+
+  /* CHAT */
+  .chat-bubble {
+    max-width: 75%;
+    padding: 10px 13px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .bubble-them { background: var(--cinza-1); color: var(--escuro); border-bottom-left-radius: 4px; align-self: flex-start; }
+  .bubble-me { background: var(--verde); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
+  .chat-messages { display: flex; flex-direction: column; padding: 12px 0; }
+  .bubble-time { font-size: 10px; color: var(--cinza-3); margin-bottom: 4px; }
+  .bubble-time.right { text-align: right; }
+
+  /* ALERTS */
+  .alert { padding: 12px 14px; border-radius: 10px; font-size: 14px; margin: 12px 0; display: flex; align-items: flex-start; gap: 10px; }
+  .alert-success { background: var(--verde-bg); color: #1a4a10; border: 1px solid #c6e8b3; }
+  .alert-warn { background: #FEF9C3; color: #92400E; border: 1px solid #FDE68A; }
+  .alert-danger { background: var(--vermelho-bg); color: #991B1B; border: 1px solid #FECACA; }
+  .alert-info { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+
+  /* NOTIF DOT */
+  .notif-dot {
+    width: 8px; height: 8px;
+    background: var(--vermelho);
+    border-radius: 50%;
+    position: absolute;
+    top: 6px; right: 6px;
+    border: 1.5px solid #fff;
+  }
+
+  /* STARS */
+  .stars { color: var(--ambar-xp); font-size: 18px; letter-spacing: 2px; }
+
+  /* HELPERS */
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-8 { margin-bottom: 8px; }
+  .text-sm { font-size: 13px; }
+  .text-xs { font-size: 11px; }
+  .text-muted { color: var(--cinza-3); }
+  .text-verde { color: var(--verde); }
+  .text-ambar { color: var(--ambar); }
+  .text-red { color: var(--vermelho); }
+  .font-bold { font-weight: 700; }
+  .font-semibold { font-weight: 600; }
+  .w-full { width: 100%; }
+  .text-center { text-align: center; }
+
+  /* RANKING */
+  .rank-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: var(--branco);
+    border: 1px solid var(--cinza-2);
+    transition: box-shadow .15s;
+  }
+  .rank-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+  .rank-num { font-size: 15px; font-weight: 800; width: 24px; text-align: center; }
+  .rank-1 { color: #D97706; }
+  .rank-2 { color: var(--cinza-3); }
+  .rank-3 { color: #92400E; }
+
+  /* NOTIFICATION ITEM */
+  .notif-item {
+    display: flex; gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: var(--branco);
+    border: 1px solid var(--cinza-2);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .notif-item.unread { background: var(--verde-bg); border-color: #c6e8b3; }
+  .notif-item:hover { background: var(--cinza-1); }
+  .notif-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+
+  /* MODAL / OVERLAY */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 500;
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: var(--branco);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 16px 40px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    transform: translateY(40px);
+    transition: transform .25s ease;
+  }
+  .modal-overlay.show .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--cinza-2); border-radius: 2px; margin: 0 auto 20px; }
+
+  /* CONQUISTAS */
+  .conquista-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: var(--branco);
+    border: 1px solid var(--cinza-2);
+  }
+  .conquista-icon { font-size: 32px; width: 48px; text-align: center; flex-shrink: 0; }
+  .conquista-locked { filter: grayscale(1); opacity: .4; }
+
+  /* PUBLICAR OFERTA */
+  .tipo-btn {
+    flex: 1; padding: 14px;
+    border-radius: 12px;
+    border: 2px solid var(--cinza-2);
+    background: var(--branco);
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .tipo-btn.selected { border-color: var(--verde); background: var(--verde-bg); }
+  .tipo-btn .tipo-icon { font-size: 26px; margin-bottom: 6px; display: block; }
+  .tipo-btn .tipo-label { font-size: 13px; font-weight: 700; color: var(--escuro); }
+  .tipo-btn .tipo-desc { font-size: 11px; color: var(--cinza-3); margin-top: 3px; }
+
+  /* CONFIRMACAO */
+  .confirm-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--cinza-1); }
+  .confirm-row:last-child { border-bottom: none; }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .anim-up { animation: slideUp .25s ease; }
+  .anim-pulse { animation: pulse .6s ease 2; }
+
+  /* ACESSIBILIDADE */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  :focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--verde); outline-offset: 2px; border-radius: 4px; }
+
+  /* CONFIRMAÇÃO PROPOSTA */
+  .confirm-card {
+    background: var(--verde-bg);
+    border: 1px solid #c6e8b3;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* DENUNCIA */
+  .denuncia-opcao {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--cinza-2);
+    background: var(--branco);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 14px;
+    text-align: left;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    color: var(--escuro);
+  }
+  .denuncia-opcao:hover, .denuncia-opcao.selected { border-color: var(--vermelho); background: var(--vermelho-bg); color: var(--vermelho); }
+
+  /* PROGRESS BAR CADASTRO */
+  .cad-progress { height: 3px; background: var(--cinza-2); margin-bottom: 0; }
+  .cad-progress-fill { height: 100%; background: var(--verde); transition: width .3s; border-radius: 0; }
+  /* MAPA */
+  .map-container {
+    position: relative;
+    background: #e8f5e0;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 280px;
+    border: 2px solid #c6e8b3;
+    margin: 12px 0;
+  }
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .map-road-h {
+    position: absolute;
+    left: 0; right: 0;
+    height: 12px;
+    background: rgba(255,255,255,.7);
+    border-top: 1px solid rgba(0,0,0,.08);
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+  .map-road-v {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 12px;
+    background: rgba(255,255,255,.7);
+    border-left: 1px solid rgba(0,0,0,.08);
+    border-right: 1px solid rgba(0,0,0,.08);
+  }
+  .map-pin {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+    transform: translate(-50%, -100%);
+    transition: transform .15s;
+    z-index: 10;
+  }
+  .map-pin:hover { transform: translate(-50%, -100%) scale(1.1); }
+  .map-pin-bubble {
+    background: var(--branco);
+    border: 2px solid var(--verde);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px;
+    color: var(--verde);
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .map-pin-bubble.me {
+    background: var(--verde);
+    color: #fff;
+    border-color: var(--verde-claro);
+    width: 48px; height: 48px;
+    font-size: 20px;
+  }
+  .map-pin-tail {
+    width: 2px; height: 8px;
+    background: var(--verde);
+    margin-top: -1px;
+  }
+  .map-pin-label {
+    font-size: 10px; font-weight: 700;
+    background: var(--escuro);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+  .map-legend {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin: 8px 0;
+  }
+  .map-legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--cinza-texto);
+  }
+  .map-legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .map-vizinho-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--branco);
+    border: 1px solid var(--cinza-2);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: box-shadow .15s;
+  }
+  .map-vizinho-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+  .map-distance-badge {
+    font-size: 11px; font-weight: 700;
+    color: var(--verde);
+    background: var(--verde-bg);
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  /* CONVERSAS (WhatsApp style) */
+  .conv-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--cinza-1);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .conv-item:hover { background: var(--cinza-1); margin: 0 -16px; padding: 12px 16px; }
+  .conv-avatar-wrap { position: relative; flex-shrink: 0; }
+  .conv-online {
+    position: absolute; bottom: 1px; right: 1px;
+    width: 11px; height: 11px;
+    background: #22C55E;
+    border-radius: 50%;
+    border: 2px solid var(--branco);
+  }
+  .conv-info { flex: 1; min-width: 0; }
+  .conv-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .conv-name { font-weight: 600; font-size: 14px; }
+  .conv-time { font-size: 11px; color: var(--cinza-3); white-space: nowrap; }
+  .conv-preview { font-size: 13px; color: var(--cinza-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv-unread-badge {
+    background: var(--verde);
+    color: #fff;
+    font-size: 11px; font-weight: 800;
+    border-radius: 10px;
+    padding: 2px 6px;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* ESTADO NOVO */
+  .onboard-card {
+    background: linear-gradient(135deg, var(--verde-bg), #fff);
+    border: 1.5px dashed #c6e8b3;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .onboard-step {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--branco);
+    border: 1px solid var(--cinza-2);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: box-shadow .15s;
+  }
+  .onboard-step:hover { box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+  .onboard-step-num {
+    width: 32px; height: 32px;
+    background: var(--verde);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* USER TYPE SWITCH */
+  .user-type-bar {
+    display: flex;
+    background: var(--cinza-1);
+    border-radius: 10px;
+    padding: 3px;
+    margin: 0 0 16px;
+  }
+  .user-type-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+    background: transparent;
+    color: var(--cinza-3);
+    font-family: inherit;
+  }
+  .user-type-btn.active {
+    background: var(--branco);
+    color: var(--verde);
+    box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     TEMA ESCURO — adicionado sem alterar nenhum CSS existente
+     Técnica: redefine as variáveis do :root quando
+     <html data-theme="dark"> está ativo. Todos os componentes
+     já usam var(--...) então herdam as cores automaticamente.
+     ══════════════════════════════════════════════════════════ */
+
+  [data-theme="dark"] {
+    --verde:       #4ade80;
+    --verde-claro: #86efac;
+    --verde-bg:    #052e16;
+    --ambar:       #fbbf24;
+    --ambar-claro: #1c1200;
+    --ambar-xp:    #fbbf24;
+    --creme:       #111110;
+    --cinza-1:     #1e1e1c;
+    --cinza-2:     #2e2e2b;
+    --cinza-3:     #737368;
+    --cinza-texto: #c4c4bc;
+    --escuro:      #f0f0ec;
+    --branco:      #1c1c1a;
+    --vermelho:    #f87171;
+    --vermelho-bg: #1c0505;
+    --azul:        #60a5fa;
+    --roxo:        #a78bfa;
+  }
+
+  /* Componentes com cores hard-coded que não usam variáveis */
+  [data-theme="dark"] .onboard-hero {
+    background: linear-gradient(160deg, #020d02 0%, #0a1f0a 40%, #0f2d0f 100%);
+  }
+  [data-theme="dark"] .profile-hero {
+    background: linear-gradient(135deg, #0a1f0a 0%, #0f2d0f 100%);
+  }
+  [data-theme="dark"] .alert-success {
+    background: #052e16; color: #86efac; border-color: #166534;
+  }
+  [data-theme="dark"] .alert-warn {
+    background: #1c1200; color: #fde68a; border-color: #854d0e;
+  }
+  [data-theme="dark"] .alert-danger {
+    background: #1c0505; color: #fca5a5; border-color: #7f1d1d;
+  }
+  [data-theme="dark"] .alert-info {
+    background: #0c1a3a; color: #93c5fd; border-color: #1e3a8a;
+  }
+  [data-theme="dark"] .seal {
+    background: #1c1200; color: #fde68a;
+  }
+  [data-theme="dark"] .notif-item.unread {
+    background: #052e16; border-color: #166534;
+  }
+  [data-theme="dark"] .map-container {
+    background: #0a1a06; border-color: #166534;
+  }
+  [data-theme="dark"] .map-road-h,
+  [data-theme="dark"] .map-road-v {
+    background: rgba(255,255,255,.08);
+  }
+  [data-theme="dark"] .onboard-card {
+    background: linear-gradient(135deg, #052e16, #1c1c1a);
+    border-color: #166534;
+  }
+  [data-theme="dark"] .level-badge {
+    background: linear-gradient(135deg, #78350f, #b45309);
+  }
+  [data-theme="dark"] .tag-ambar { color: #fde68a; }
+  [data-theme="dark"] .rank-1 { color: #fbbf24; }
+  [data-theme="dark"] .rank-3 { color: #d97706; }
+
+  /* ══════════════════════════════════════════════════════════
+     SWITCH DE TEMA — elemento novo, position:fixed
+     z-index: 200 → fica acima da topbar (100) e abaixo
+     dos modais (500) e toast (9999).
+     Posição: top:0, right:0, altura 56px (igual à topbar)
+     para se encaixar visualmente na barra sem deslocar nada.
+     ══════════════════════════════════════════════════════════ */
+
+  #theme-switch-widget {
+    position: fixed;
+    top: 0;
+    right: 120px; /* Aumente este valor para empurrar ainda mais para a esquerda */
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding-right: 0; 
+    z-index: 200;
+    pointer-events: none; 
+  }
+  #theme-switch-btn {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--cinza-1);
+    border: 1.5px solid var(--cinza-2);
+    border-radius: 20px;
+    padding: 5px 10px 5px 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cinza-3);
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  #theme-switch-btn:hover {
+    background: var(--cinza-2);
+    color: var(--cinza-texto);
+  }
+  /* Pista do toggle */
+  #theme-switch-track {
+    width: 28px;
+    height: 16px;
+    background: var(--cinza-2);
+    border-radius: 16px;
+    position: relative;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  [data-theme="dark"] #theme-switch-track {
+    background: #166534;
+  }
+  /* Bolinha do toggle */
+  #theme-switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+  [data-theme="dark"] #theme-switch-thumb {
+    transform: translateX(12px);
+  }
+  /* Telas sem topbar (welcome/onboard): o widget precisa de
+     fundo para não sumir sobre o gradiente escuro.
+     Usamos uma sombra sutil apenas para o botão. */
+  #screen-welcome.active ~ #theme-switch-widget #theme-switch-btn,
+  #screen-cadastro.active ~ #theme-switch-widget #theme-switch-btn {
+    background: rgba(0,0,0,.25);
+    border-color: rgba(255,255,255,.2);
+    color: rgba(255,255,255,.85);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     WIDGET DE TEMA ESCURO — adicionado sem alterar HTML existente
+     position:fixed, z-index:200, alinhado à topbar (height:56px)
+     ══════════════════════════════════════════════════════════ -->
+<div id="theme-switch-widget" aria-hidden="true">
+  <button id="theme-switch-btn" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro ou escuro">
+    <div id="theme-switch-track">
+      <div id="theme-switch-thumb"></div>
+    </div>
+    <span id="theme-switch-label">Escuro</span>
+  </button>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- MODAL DENUNCIA -->
+<div class="modal-overlay" id="modal-denuncia" role="dialog" aria-modal="true" aria-labelledby="denuncia-titulo">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:6px" id="denuncia-titulo">⚑ Fazer uma denúncia</div>
+    <div class="text-sm text-muted mb-8">Selecione o motivo da denúncia:</div>
+    <button class="denuncia-opcao" onclick="selecionarDenuncia(this)">🚫 Não compareceu ao encontro</button>
+    <button class="denuncia-opcao" onclick="selecionarDenuncia(this)">😠 Comportamento inadequado ou rude</button>
+    <button class="denuncia-opcao" onclick="selecionarDenuncia(this)">🔒 Pediu dinheiro ou informações pessoais</button>
+    <button class="denuncia-opcao" onclick="selecionarDenuncia(this)">⚠️ Descumpriu o acordo combinado</button>
+    <button class="denuncia-opcao" onclick="selecionarDenuncia(this)">📛 Perfil falso ou informações incorretas</button>
+    <button class="denuncia-opcao" onclick="selecionarDenuncia(this)">🆘 Outro motivo</button>
+    <div class="form-group mt-16" id="denuncia-detalhe" style="display:none">
+      <label class="form-label">Descreva o que aconteceu</label>
+      <textarea class="form-input" rows="3" placeholder="Quanto mais detalhes, melhor para a moderação..."></textarea>
+    </div>
+    <button class="btn btn-danger mt-8" id="btn-enviar-denuncia" style="display:none" onclick="enviarDenuncia()">Enviar denúncia</button>
+    <button class="btn btn-secondary mt-8" onclick="fecharModal('modal-denuncia')">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL SEGURANÇA -->
+<div class="modal-overlay" id="modal-seguranca" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:12px">🔒 Dicas de segurança</div>
+    <div class="alert alert-warn">
+      <span>⚠️</span>
+      <div class="text-sm">Leia antes do seu primeiro encontro</div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="font-semibold text-sm">📍 Escolha locais públicos</div>
+      <div class="text-xs text-muted mt-4">Hall do condomínio, praças, cafeterias — sempre evite locais isolados no primeiro encontro.</div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="font-semibold text-sm">👥 Avise alguém de confiança</div>
+      <div class="text-xs text-muted mt-4">Informe um familiar ou amigo sobre o encontro: quem é a pessoa, onde e quando.</div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="font-semibold text-sm">🚫 Nunca compartilhe dados bancários</div>
+      <div class="text-xs text-muted mt-4">Esta plataforma é 100% sem dinheiro. Suspeite de qualquer pedido de pagamento.</div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="font-semibold text-sm">📞 Mantenha contato pelo chat</div>
+      <div class="text-xs text-muted mt-4">Use o chat interno para combinar detalhes. Isso protege seu número e cria histórico.</div>
+    </div>
+    <button class="btn btn-primary mt-8" onclick="fecharModal('modal-seguranca')">Entendi, pode fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA 0: BOAS-VINDAS
+══════════════════════ -->
+<div class="screen active" id="screen-welcome">
+  <div class="onboard-hero">
+    <div class="onboard-illustration">🏘️</div>
+    <div class="logo">Vizinhança<span>+</span></div>
+    <p>Troque habilidades com seus vizinhos.<br>Sem dinheiro. Com confiança.</p>
+  </div>
+  <div class="content mt-24">
+    <button class="btn btn-primary" onclick="goTo('screen-cadastro')" aria-label="Criar minha conta no Vizinhança+">Criar minha conta</button>
+    <div style="margin:14px 0; text-align:center; font-size:13px; color:var(--cinza-3);">Já tenho uma conta</div>
+    <button class="btn btn-secondary" onclick="goTo('screen-login')">Entrar →</button>
+
+    <div class="divider"></div>
+
+    <!-- COMO FUNCIONA RESUMIDO -->
+    <div class="section-title">Como funciona</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:32px;height:32px;background:var(--verde-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">1️⃣</div>
+        <div>
+          <div class="font-semibold text-sm">Cadastre suas habilidades</div>
+          <div class="text-xs text-muted mt-4">Culinária, reparos, aulas, tecnologia…</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:32px;height:32px;background:var(--verde-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">2️⃣</div>
+        <div>
+          <div class="font-semibold text-sm">Encontre vizinhos compatíveis</div>
+          <div class="text-xs text-muted mt-4">O sistema sugere trocas por proximidade</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:32px;height:32px;background:var(--verde-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">3️⃣</div>
+        <div>
+          <div class="font-semibold text-sm">Troque e ganhe reconhecimento</div>
+          <div class="text-xs text-muted mt-4">Selos, XP e reputação na comunidade</div>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="text-align:center;">
+      <div class="text-xs text-muted">Protótipo IHC · UFMG · Grupo 3</div>
+      <div class="text-xs text-muted mt-4">Vizinhança+ — Economia colaborativa local</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA 1: CADASTRO
+══════════════════════ -->
+<div class="screen" id="screen-cadastro">
+  <div class="cad-progress" aria-hidden="true"><div class="cad-progress-fill" id="cad-prog" style="width:33%"></div></div>
+  <div class="topbar">
+    <button class="topbar-back" onclick="cadVoltar()" aria-label="Voltar">←</button>
+    <span class="topbar-title" id="cad-titulo">Passo 1 de 3</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div class="step-dots mt-16" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
+
+    <!-- PASSO 1 -->
+    <div id="cad-step1" class="anim-up">
+      <div class="mt-8 mb-8">
+        <div style="font-size:22px; font-weight:800">Olá, vizinho! 👋</div>
+        <div class="text-sm text-muted mt-4">Vamos começar com seus dados básicos</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cad-nome">Seu nome completo</label>
+        <input class="form-input" type="text" placeholder="Ex: Dona Luíza" id="cad-nome" autocomplete="name">
+        <div class="form-error" id="err-nome">Por favor, informe seu nome</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cad-email">E-mail</label>
+        <input class="form-input" type="email" placeholder="seu@email.com" id="cad-email" autocomplete="email">
+        <div class="form-error" id="err-email">Informe um e-mail válido</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cad-senha">Senha</label>
+        <div style="position:relative">
+          <input class="form-input" type="password" placeholder="Mínimo 6 caracteres" id="cad-senha" autocomplete="new-password">
+          <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--cinza-3)" onclick="toggleSenha('cad-senha')" aria-label="Mostrar ou ocultar senha">👁</button>
+        </div>
+        <div class="form-error" id="err-senha">Mínimo 6 caracteres</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cad-bairro">Seu bairro / condomínio</label>
+        <input class="form-input" type="text" placeholder="Ex: Condomínio Solar" id="cad-bairro">
+        <div class="text-xs text-muted mt-4">Usado para sugerir vizinhos próximos</div>
+      </div>
+      <button class="btn btn-primary mt-8" onclick="validarStep1()">Continuar</button>
+      <div class="text-center mt-8">
+        <button style="background:none;border:none;color:var(--verde);font-size:13px;cursor:pointer;font-family:inherit" onclick="goTo('screen-login')">Já tenho conta → Entrar</button>
+      </div>
+    </div>
+
+    <!-- PASSO 2 -->
+    <div id="cad-step2" style="display:none" class="anim-up">
+      <div class="mb-8 mt-8">
+        <div style="font-size:22px; font-weight:800">O que você sabe fazer? 🛠️</div>
+        <div class="text-sm text-muted mt-4">Escolha suas habilidades principais (pode escolher várias)</div>
+      </div>
+      <div class="chip-row" id="habilidades-chips" role="group" aria-label="Habilidades">
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🍳 Culinária</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">💻 Tecnologia</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🌿 Jardinagem</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🔨 Reparos</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🎨 Design</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">📚 Aulas / Tutoria</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🧹 Organização</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🚗 Transporte</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🐾 Pet care</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">📸 Fotografia</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🎵 Música</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">💪 Fitness</button>
+      </div>
+      <div class="form-error show" id="err-hab" style="display:none">Selecione pelo menos uma habilidade</div>
+      <button class="btn btn-primary mt-16" onclick="validarStep2()">Continuar</button>
+    </div>
+
+    <!-- PASSO 3 -->
+    <div id="cad-step3" style="display:none" class="anim-up">
+      <div class="mb-8 mt-8">
+        <div style="font-size:22px; font-weight:800">Do que você precisa? 🙋</div>
+        <div class="text-sm text-muted mt-4">Escolha o que gostaria de encontrar na comunidade</div>
+      </div>
+      <div class="chip-row" id="necessidades-chips" role="group" aria-label="Necessidades">
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">💻 Suporte técnico</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🔨 Reparos domésticos</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🍳 Aulas de culinária</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">📚 Inglês / Idiomas</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🌿 Plantas e mudas</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🎨 Artes digitais</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">📊 Informática básica</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🐾 Passeio de pet</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🎵 Aulas de música</button>
+        <button class="chip" onclick="toggleChip(this)" role="checkbox" aria-checked="false">🏡 Organização</button>
+      </div>
+      <div class="alert alert-info mt-16">
+        <span>💡</span>
+        <div class="text-sm">Ao criar sua conta, você ganha <strong>50 XP de boas-vindas</strong> e o selo "Novo Vizinho" 🎉</div>
+      </div>
+      <button class="btn btn-primary mt-8" onclick="finalizarCadastro()">Criar minha conta 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: LOGIN
+══════════════════════ -->
+<div class="screen" id="screen-login">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-welcome')" aria-label="Voltar">←</button>
+    <span class="topbar-title">Entrar</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div class="mt-24 mb-8" style="text-align:center">
+      <div style="font-size:40px">🏘️</div>
+      <div style="font-size:20px;font-weight:800;margin-top:8px">Bem-vindo de volta!</div>
+      <div class="text-sm text-muted mt-4">Entre para continuar trocando</div>
+    </div>
+    <div class="alert alert-info mt-16">
+      <span>💡</span>
+      <div class="text-sm">
+        <strong>Contas de demonstração disponíveis:</strong><br>
+        <span style="display:block;margin-top:6px;font-family:monospace;font-size:12px">
+          joao@vizinhanca.app · <em>senha123</em> &nbsp;→ usuário com histórico<br>
+          maria@vizinhanca.app · <em>senha123</em> &nbsp;→ usuário com histórico
+        </span>
+        <span style="display:block;margin-top:6px">Ou <strong>crie uma conta nova</strong> para ver a experiência de primeiro acesso.</span>
+      </div>
+    </div>
+    <div class="form-group mt-16">
+      <label class="form-label" for="login-email">E-mail</label>
+      <input class="form-input" id="login-email" type="email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="login-senha">Senha</label>
+      <div style="position:relative">
+        <input class="form-input" id="login-senha" type="password" placeholder="Sua senha" autocomplete="current-password">
+        <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--cinza-3)" onclick="toggleSenha('login-senha')" aria-label="Mostrar ou ocultar senha">👁</button>
+      </div>
+      <div class="form-error" id="err-login">E-mail ou senha incorretos</div>
+    </div>
+    <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+    <div class="text-center mt-16">
+      <button style="background:none;border:none;color:var(--verde);font-size:13px;cursor:pointer;font-family:inherit" onclick="goTo('screen-cadastro')">Não tenho conta → Criar agora</button>
+    </div>
+    <div class="divider"></div>
+    <div style="text-align:center">
+      <button style="background:none;border:none;color:var(--cinza-3);font-size:13px;cursor:pointer;font-family:inherit" onclick="showToast('Funcionalidade em desenvolvimento')">Esqueci minha senha</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: MURAL
+══════════════════════ -->
+<div class="screen" id="screen-mural">
+  <div class="topbar">
+    <div class="topbar-logo">Vizinhança<span>+</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button style="background:none;border:none;cursor:pointer;padding:6px;border-radius:50%;position:relative;display:flex" onclick="goTo('screen-notificacoes')" aria-label="Notificações">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="var(--cinza-texto)" stroke-width="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span class="notif-dot" aria-hidden="true" id="mural-notif-dot" style="display:none"></span>
+      </button>
+      <button class="topbar-avatar" onclick="goTo('screen-meuperfil')" id="mural-avatar" aria-label="Meu perfil">JM</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="mt-16 mb-8">
+      <div style="font-size:20px; font-weight:800" id="mural-saudacao">Bom dia, João! ☀️</div>
+      <div class="text-sm text-muted mt-4" id="mural-subtitulo">3 conexões sugeridas perto de você</div>
+    </div>
+
+    <!-- BUSCA -->
+    <div class="input-icon-wrap mb-8">
+      <span class="icon" aria-hidden="true">🔍</span>
+      <input class="form-input" type="search" placeholder="Buscar habilidade ou vizinho..." id="busca-input" oninput="filtrarMural()" aria-label="Buscar no mural">
+    </div>
+
+    <!-- FILTROS -->
+    <div class="chip-row mb-8" style="overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px" role="group" aria-label="Filtros por categoria">
+      <button class="chip selected" onclick="setFilter(this,'todos')">Todos</button>
+      <button class="chip" onclick="setFilter(this,'culinaria')">🍳 Culinária</button>
+      <button class="chip" onclick="setFilter(this,'tecnologia')">💻 Tecnologia</button>
+      <button class="chip" onclick="setFilter(this,'reparos')">🔨 Reparos</button>
+      <button class="chip" onclick="setFilter(this,'aulas')">📚 Aulas</button>
+      <button class="chip" onclick="setFilter(this,'design')">🎨 Design</button>
+    </div>
+
+    <!-- MATCH SUGERIDO -->
+    <div class="alert alert-success" id="match-alert" style="display:none">
+      <span>✨</span>
+      <div>
+        <div class="font-semibold text-sm">Match encontrado!</div>
+        <div class="text-xs mt-4">Dona Luíza oferece culinária · você precisa de suporte técnico 🤝</div>
+      </div>
+    </div>
+
+    <div class="section-title">Publicações recentes</div>
+
+    <!-- CARDS DO MURAL -->
+    <div id="mural-cards">
+
+    <div class="card card-clickable" onclick="goTo('screen-perfil-luiza')" data-cat="culinaria" role="article" aria-label="Publicação de Dona Luíza">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-8">
+          <div class="avatar av-roxo" style="width:44px;height:44px;font-size:16px" aria-hidden="true">DL</div>
+          <div>
+            <div class="font-semibold text-sm">Dona Luíza</div>
+            <div class="text-xs text-muted">⚡ 12 trocas · ⭐ Lenda da Vizinhança</div>
+          </div>
+        </div>
+        <div class="tag tag-verde">OFERTA</div>
+      </div>
+      <div class="match-line">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span style="font-size:13px">🍳 Torta de Maçã caseira</span>
+        <span class="match-arrow" aria-hidden="true">⇄</span>
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span style="font-size:13px">💻 Suporte técnico</span>
+      </div>
+      <div class="text-sm text-muted">📍 Ap. 301 · há 15 min</div>
+    </div>
+
+    <div class="card card-clickable" onclick="goTo('screen-perfil-italo')" data-cat="reparos" role="article" aria-label="Publicação de Ítalo Carvalho">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-8">
+          <div class="avatar av-laranja" style="width:44px;height:44px;font-size:16px" aria-hidden="true">IC</div>
+          <div>
+            <div class="font-semibold text-sm">Ítalo Carvalho</div>
+            <div class="text-xs text-muted">⚡ 7 trocas · 🏆 Mestre das Obras</div>
+          </div>
+        </div>
+        <div class="tag tag-verde">OFERTA</div>
+      </div>
+      <div class="match-line">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span style="font-size:13px">🔨 Montagem de móveis</span>
+        <span class="match-arrow" aria-hidden="true">⇄</span>
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span style="font-size:13px">📊 Aulas de Excel</span>
+      </div>
+      <div class="text-sm text-muted">📍 Rua das Flores, 12 · há 1h</div>
+    </div>
+
+    <div class="card card-clickable" onclick="goTo('screen-perfil-lucas')" data-cat="design" role="article" aria-label="Publicação de Lucas Drummond">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-8">
+          <div class="avatar av-azul" style="width:44px;height:44px;font-size:16px" aria-hidden="true">LD</div>
+          <div>
+            <div class="font-semibold text-sm">Lucas Drummond</div>
+            <div class="text-xs text-muted">⚡ 4 trocas · 🎨 Designer Bronze</div>
+          </div>
+        </div>
+        <div class="tag tag-ambar">DEMANDA</div>
+      </div>
+      <div class="match-line">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span style="font-size:13px">🎨 Identidade visual</span>
+        <span class="match-arrow" aria-hidden="true">⇄</span>
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span style="font-size:13px">🔨 Montagem prateleiras</span>
+      </div>
+      <div class="text-sm text-muted">📍 Bl. B, ap. 204 · há 3h</div>
+    </div>
+
+    <div class="card card-clickable" onclick="showToast('Abrindo perfil do Prof. Sebastião...')" data-cat="aulas" role="article">
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-8">
+          <div class="avatar av-teal" style="width:44px;height:44px;font-size:16px" aria-hidden="true">PS</div>
+          <div>
+            <div class="font-semibold text-sm">Prof. Sebastião</div>
+            <div class="text-xs text-muted">⚡ 22 trocas · 🏅 Mentor Comunitário</div>
+          </div>
+        </div>
+        <div class="tag tag-verde">OFERTA</div>
+      </div>
+      <div class="match-line">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span style="font-size:13px">📚 Aulas de inglês</span>
+        <span class="match-arrow" aria-hidden="true">⇄</span>
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span style="font-size:13px">💻 Suporte computador</span>
+      </div>
+      <div class="text-sm text-muted">📍 Ap. 502 · há 5h</div>
+    </div>
+
+    </div><!-- fim mural-cards -->
+
+    <div id="mural-vazio" style="display:none;text-align:center;padding:32px 0">
+      <div style="font-size:40px">🔍</div>
+      <div class="font-semibold mt-8">Nenhum resultado encontrado</div>
+      <div class="text-sm text-muted mt-4">Tente outro termo ou categoria</div>
+    </div>
+
+    <button class="btn btn-outline mt-8" onclick="goTo('screen-publicar')">+ Publicar oferta ou demanda</button>
+  </div>
+
+  <div class="bottomnav" role="navigation" aria-label="Menu principal">
+    <button class="bottomnav-item active" aria-label="Mural" aria-current="page">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Mural
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-mensagens')" aria-label="Mensagens">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Mensagens
+      <span class="nav-badge msg-badge-nav" aria-label="mensagens novas" style="display:none"></span>
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-maps')" aria-label="Maps">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      Maps
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-ranking')" aria-label="Ranking">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Ranking
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-meuperfil')" aria-label="Meu perfil">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     PERFIL: DONA LUÍZA
+══════════════════════ -->
+<div class="screen" id="screen-perfil-luiza">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar ao mural">←</button>
+    <span class="topbar-title">Perfil do vizinho</span>
+    <button class="btn-sm btn-secondary" style="width:auto;padding:6px 12px;font-size:12px;color:var(--vermelho)" onclick="abrirDenuncia()" aria-label="Denunciar">⚑ Denunciar</button>
+  </div>
+  <div class="content">
+    <div style="text-align:center; padding:24px 0 16px">
+      <div class="avatar av-roxo" style="width:80px;height:80px;font-size:28px;margin:0 auto" aria-hidden="true">DL</div>
+      <div style="font-size:22px;font-weight:800;margin-top:12px">Dona Luíza</div>
+      <div class="text-sm text-muted mt-4">Condomínio Solar · Ap. 301 · BH</div>
+      <div class="level-badge" style="margin-top:10px">⭐ Lenda da Vizinhança</div>
+      <div class="stars mt-8" aria-label="Avaliação: 4.9 de 5 estrelas">★★★★★</div>
+      <div class="text-xs text-muted">4,9 · 12 avaliações</div>
+    </div>
+
+    <!-- STATS RÁPIDOS -->
+    <div class="flex gap-8 mt-4">
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--verde)">12</div>
+        <div class="text-xs text-muted">Trocas</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--ambar)">4,9</div>
+        <div class="text-xs text-muted">Avaliação</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--roxo)">3</div>
+        <div class="text-xs text-muted">Selos</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex justify-between items-center mb-8">
+        <div class="text-sm font-semibold">Pontos de experiência</div>
+        <div class="text-sm text-ambar font-bold">840 / 1000 XP</div>
+      </div>
+      <div class="xp-bar-wrap" role="progressbar" aria-valuenow="84" aria-valuemin="0" aria-valuemax="100" aria-label="840 de 1000 XP">
+        <div class="xp-bar-fill" style="width:84%"></div>
+      </div>
+      <div class="text-xs text-muted mt-4">Faltam 160 XP para "Guardiã do Bairro" 🏅</div>
+    </div>
+
+    <div class="section-title">Selos conquistados</div>
+    <div class="flex gap-8" style="flex-wrap:wrap">
+      <div class="seal"><span class="seal-icon">🍳</span>Mestre Cozinheira</div>
+      <div class="seal"><span class="seal-icon">🌿</span>Mão Verde</div>
+      <div class="seal"><span class="seal-icon">🤝</span>Vizinha Solidária</div>
+    </div>
+
+    <div class="section-title">Oferta atual</div>
+    <div class="card" style="background:var(--verde-bg);border-color:#c6e8b3">
+      <div class="match-line" style="background:transparent;padding:0;margin:0 0 10px">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span class="text-sm">🍳 Torta de Maçã caseira</span>
+      </div>
+      <div class="match-line" style="background:transparent;padding:0;margin:0">
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span class="text-sm">💻 Suporte técnico simples</span>
+      </div>
+    </div>
+
+    <div class="section-title">Histórico de trocas</div>
+    <div class="card text-sm">
+      <div class="flex justify-between items-center">
+        <span>🔨 Ajudou com prateleiras</span>
+        <span class="tag tag-verde" style="font-size:10px">✓ Concluída</span>
+      </div>
+      <div class="text-xs text-muted mt-4">Jan 2025 · com Lucas D.</div>
+    </div>
+    <div class="card text-sm">
+      <div class="flex justify-between items-center">
+        <span>🌿 Mudas de alecrim</span>
+        <span class="tag tag-verde" style="font-size:10px">✓ Concluída</span>
+      </div>
+      <div class="text-xs text-muted mt-4">Dez 2024 · com Maria S.</div>
+    </div>
+
+    <!-- AVALIAÇÕES RECENTES -->
+    <div class="section-title">Avaliações recentes</div>
+    <div class="card text-sm">
+      <div class="flex items-center gap-8 mb-8">
+        <div class="avatar av-azul" style="width:28px;height:28px;font-size:11px">LD</div>
+        <div>
+          <div class="font-semibold">Lucas Drummond</div>
+          <div style="color:var(--ambar-xp)">★★★★★</div>
+        </div>
+      </div>
+      <div style="color:var(--cinza-texto)">"Dona Luíza é incrível! A torta estava deliciosa e ela é super simpática."</div>
+      <div class="text-xs text-muted mt-4">Jan 2025</div>
+    </div>
+
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="goTo('screen-proposta')">🤝 Propor uma troca</button>
+    <button class="btn btn-secondary mt-8" onclick="abrirConversa(this)" data-nome="Dona Luíza" data-avatar="DL" data-color="av-roxo">💬 Enviar mensagem</button>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     PERFIL: ÍTALO
+══════════════════════ -->
+<div class="screen" id="screen-perfil-italo">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar ao mural">←</button>
+    <span class="topbar-title">Perfil do vizinho</span>
+    <button class="btn-sm btn-secondary" style="width:auto;padding:6px 12px;font-size:12px;color:var(--vermelho)" onclick="abrirDenuncia()" aria-label="Denunciar">⚑ Denunciar</button>
+  </div>
+  <div class="content">
+    <div style="text-align:center; padding:24px 0 16px">
+      <div class="avatar av-laranja" style="width:80px;height:80px;font-size:28px;margin:0 auto" aria-hidden="true">IC</div>
+      <div style="font-size:22px;font-weight:800;margin-top:12px">Ítalo Carvalho</div>
+      <div class="text-sm text-muted mt-4">Rua das Flores, 12 · BH</div>
+      <div class="level-badge" style="margin-top:10px">🏆 Mestre das Obras</div>
+      <div class="stars mt-8" aria-label="Avaliação: 5 de 5 estrelas">★★★★★</div>
+      <div class="text-xs text-muted">5,0 · 7 avaliações</div>
+    </div>
+
+    <div class="flex gap-8 mt-4">
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--verde)">7</div>
+        <div class="text-xs text-muted">Trocas</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--ambar)">5,0</div>
+        <div class="text-xs text-muted">Avaliação</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--roxo)">2</div>
+        <div class="text-xs text-muted">Selos</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex justify-between items-center mb-8">
+        <div class="text-sm font-semibold">Experiência</div>
+        <div class="text-sm text-ambar font-bold">620 / 800 XP</div>
+      </div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" style="width:77%"></div></div>
+      <div class="text-xs text-muted mt-4">Faltam 180 XP para "Lenda da Vizinhança" ⭐</div>
+    </div>
+
+    <div class="section-title">Selos conquistados</div>
+    <div class="flex gap-8" style="flex-wrap:wrap">
+      <div class="seal"><span class="seal-icon">🔨</span>Mão na Massa</div>
+      <div class="seal"><span class="seal-icon">🏗️</span>Mestre Obras</div>
+    </div>
+
+    <div class="section-title">Oferta atual</div>
+    <div class="card" style="background:var(--verde-bg);border-color:#c6e8b3">
+      <div class="match-line" style="background:transparent;padding:0;margin:0 0 10px">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span class="text-sm">🔨 Montagem de móveis e reparos</span>
+      </div>
+      <div class="match-line" style="background:transparent;padding:0;margin:0">
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span class="text-sm">📊 Aulas de Excel / Informática</span>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <span>💡</span>
+      <div class="text-sm">Ítalo tem o selo <strong>"Mentor Comunitário"</strong> — perfil verificado e muito bem avaliado.</div>
+    </div>
+
+    <button class="btn btn-primary mt-8" onclick="goTo('screen-proposta')">🤝 Propor uma troca</button>
+    <button class="btn btn-secondary mt-8" onclick="abrirConversa(this)" data-nome="Ítalo Carvalho" data-avatar="IC" data-color="av-laranja">💬 Enviar mensagem</button>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     PERFIL: LUCAS
+══════════════════════ -->
+<div class="screen" id="screen-perfil-lucas">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar ao mural">←</button>
+    <span class="topbar-title">Perfil do vizinho</span>
+    <button class="btn-sm btn-secondary" style="width:auto;padding:6px 12px;font-size:12px;color:var(--vermelho)" onclick="abrirDenuncia()" aria-label="Denunciar">⚑ Denunciar</button>
+  </div>
+  <div class="content">
+    <div style="text-align:center; padding:24px 0 16px">
+      <div class="avatar av-azul" style="width:80px;height:80px;font-size:28px;margin:0 auto" aria-hidden="true">LD</div>
+      <div style="font-size:22px;font-weight:800;margin-top:12px">Lucas Drummond</div>
+      <div class="text-sm text-muted mt-4">Bl. B, Ap. 204 · BH</div>
+      <div class="level-badge" style="margin-top:10px">🎨 Designer Bronze</div>
+      <div class="stars mt-8" aria-label="Avaliação: 4.7 de 5 estrelas">★★★★☆</div>
+      <div class="text-xs text-muted">4,7 · 4 avaliações</div>
+    </div>
+
+    <div class="flex gap-8 mt-4">
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--verde)">4</div>
+        <div class="text-xs text-muted">Trocas</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--ambar)">4,7</div>
+        <div class="text-xs text-muted">Avaliação</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px">
+        <div style="font-size:22px;font-weight:800;color:var(--roxo)">2</div>
+        <div class="text-xs text-muted">Selos</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex justify-between items-center mb-8">
+        <div class="text-sm font-semibold">Experiência</div>
+        <div class="text-sm text-ambar font-bold">310 / 500 XP</div>
+      </div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" style="width:62%"></div></div>
+      <div class="text-xs text-muted mt-4">Faltam 190 XP para "Designer Prata" 🥈</div>
+    </div>
+
+    <div class="section-title">Selos conquistados</div>
+    <div class="flex gap-8" style="flex-wrap:wrap">
+      <div class="seal"><span class="seal-icon">🎨</span>Designer Bronze</div>
+      <div class="seal"><span class="seal-icon">🤝</span>Novo Vizinho</div>
+    </div>
+
+    <div class="section-title">Oferta atual</div>
+    <div class="card" style="background:var(--verde-bg);border-color:#c6e8b3">
+      <div class="match-line" style="background:transparent;padding:0;margin:0 0 10px">
+        <span class="match-pill mp-oferta">Oferece</span>
+        <span class="text-sm">🎨 Criação de identidade visual</span>
+      </div>
+      <div class="match-line" style="background:transparent;padding:0;margin:0">
+        <span class="match-pill mp-demanda">Precisa</span>
+        <span class="text-sm">🔨 Montagem de prateleiras</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-8" onclick="goTo('screen-proposta')">🤝 Propor uma troca</button>
+    <button class="btn btn-secondary mt-8" onclick="abrirConversa(this)" data-nome="Lucas Drummond" data-avatar="LD" data-color="av-azul">💬 Enviar mensagem</button>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: PROPOSTA
+══════════════════════ -->
+<div class="screen" id="screen-proposta">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-perfil-luiza')" aria-label="Voltar">←</button>
+    <span class="topbar-title">Nova proposta</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div class="alert alert-success mt-16">
+      <span>🤝</span>
+      <div class="text-sm">Você está propondo uma troca.</div>
+    </div>
+
+    <div class="section-title">O que você oferece</div>
+    <div class="form-group">
+      <label class="form-label" for="prop-oferta">Sua oferta</label>
+      <input class="form-input" type="text" value="..." id="prop-oferta">
+    </div>
+
+    <div class="section-title">Detalhes do encontro</div>
+    <div class="form-group">
+      <label class="form-label" for="prop-data">Data sugerida</label>
+      <input class="form-input" type="date" id="prop-data">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="prop-hora">Horário</label>
+      <input class="form-input" type="time" value="15:00" id="prop-hora">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="prop-local">Local sugerido</label>
+      <input class="form-input" type="text" value="..." id="prop-local">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="prop-msg">Mensagem (opcional)</label>
+      <textarea class="form-input" id="prop-msg" rows="3" placeholder="Conte um pouco sobre o que você pode fazer..."></textarea>
+    </div>
+
+    <div class="alert alert-warn">
+      <span>🔒</span>
+      <div>
+        <div class="font-semibold text-sm">Dica de segurança</div>
+        <div class="text-xs mt-4">Recomendamos encontros em locais públicos e iluminados. <button style="background:none;border:none;color:var(--ambar);font-size:12px;cursor:pointer;font-family:inherit;font-weight:600" onclick="abrirModal('modal-seguranca')">Ver mais dicas →</button></div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goTo('screen-proposta-enviada')">Enviar proposta</button>
+    <button class="btn btn-secondary mt-8" onclick="goTo('screen-mural')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: PROPOSTA ENVIADA
+══════════════════════ -->
+<div class="screen" id="screen-proposta-enviada">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar ao mural">←</button>
+    <span class="topbar-title">Proposta enviada</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content" style="text-align:center">
+    <div style="font-size:72px; margin-top:48px" aria-hidden="true">🎉</div>
+    <div style="font-size:22px; font-weight:800; margin-top:16px">Proposta enviada!</div>
+    <div class="text-sm text-muted mt-8" style="max-width:280px;margin:8px auto 0">
+      Dona Luíza receberá uma notificação e poderá aceitar ou recusar sua proposta.
+    </div>
+
+    <div class="card mt-24" style="text-align:left">
+      <div class="text-sm font-semibold mb-8">📋 Resumo da proposta</div>
+      <div class="confirm-row"><span class="text-muted text-sm">Você oferece</span><span class="font-semibold text-sm">💻 Suporte técnico</span></div>
+      <div class="confirm-row"><span class="text-muted text-sm">Você recebe</span><span class="font-semibold text-sm">🍳 Torta de Maçã</span></div>
+      <div class="confirm-row"><span class="text-muted text-sm">Local</span><span class="font-semibold text-sm">Hall do condomínio</span></div>
+      <div class="confirm-row"><span class="text-muted text-sm">Status</span><span class="tag tag-ambar" style="font-size:11px">⏳ Aguardando resposta</span></div>
+    </div>
+
+    <div class="alert alert-info mt-8" style="text-align:left">
+      <span>📬</span>
+      <div class="text-sm">Você receberá uma notificação assim que Dona Luíza responder.</div>
+    </div>
+
+    <button class="btn btn-primary mt-16" onclick="abrirChatDireto('luiza');goTo('screen-mensagens')">Ir para o chat com Dona Luíza</button>
+    <button class="btn btn-secondary mt-8" onclick="goTo('screen-mural')">Voltar ao mural</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════
+     TELA: MAPS
+══════════════════════ -->
+<div class="screen" id="screen-maps">
+  <div class="topbar">
+    <div class="topbar-logo">Vizinhança<span>+</span></div>
+    <button style="background:none;border:none;cursor:pointer;padding:6px;border-radius:50%;display:flex" onclick="showToast('Localização atualizada 📍')" aria-label="Atualizar localização">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="var(--cinza-texto)" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </button>
+  </div>
+  <div class="content">
+    <div class="mt-16 mb-8">
+      <div style="font-size:18px;font-weight:800">📍 Vizinhos próximos</div>
+      <div class="text-sm text-muted mt-4">República UFMG · BH</div>
+    </div>
+
+    <!-- MAPA SIMPLIFICADO -->
+    <div class="map-container" role="img" aria-label="Mapa com localização dos vizinhos">
+      <div class="map-grid"></div>
+      <!-- Ruas -->
+      <div class="map-road-h" style="top:50%"></div>
+      <div class="map-road-v" style="left:40%"></div>
+      <div class="map-road-h" style="top:30%"></div>
+      <div class="map-road-v" style="left:70%"></div>
+      <!-- Blocos de construção -->
+      <div style="position:absolute;top:14%;left:10%;width:22%;height:12%;background:#d4e9c5;border-radius:4px;border:1px solid #b4d4a5;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#3a7a25">Cond. Solar</div>
+      <div style="position:absolute;top:34%;left:10%;width:22%;height:12%;background:#d4e9c5;border-radius:4px;border:1px solid #b4d4a5;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#3a7a25">República</div>
+      <div style="position:absolute;top:14%;left:44%;width:22%;height:12%;background:#dde8f8;border-radius:4px;border:1px solid #bdd1f0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#2563EB">Bl. B</div>
+      <div style="position:absolute;top:54%;left:44%;width:20%;height:12%;background:#dde8f8;border-radius:4px;border:1px solid #bdd1f0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#2563EB">Rua das Flores</div>
+      <div style="position:absolute;top:54%;left:73%;width:18%;height:12%;background:#f8f0dd;border-radius:4px;border:1px solid #f0ddb1"></div>
+
+      <!-- Pins -->
+      <div class="map-pin" style="left:50%;top:55%" onclick="showToast('Você está aqui 📍')">
+        <div class="map-pin-bubble me" aria-label="Sua localização">📍</div>
+        <div class="map-pin-tail"></div>
+        <div class="map-pin-label">Você</div>
+      </div>
+      <div class="map-pin" style="left:22%;top:28%" onclick="goTo('screen-perfil-luiza')">
+        <div class="map-pin-bubble">DL</div>
+        <div class="map-pin-tail"></div>
+        <div class="map-pin-label">Dona Luíza</div>
+      </div>
+      <div class="map-pin" style="left:55%;top:65%" onclick="goTo('screen-perfil-italo')">
+        <div class="map-pin-bubble" style="border-color:#EA580C;color:#EA580C">IC</div>
+        <div class="map-pin-tail" style="background:#EA580C"></div>
+        <div class="map-pin-label">Ítalo</div>
+      </div>
+      <div class="map-pin" style="left:55%;top:25%" onclick="goTo('screen-perfil-lucas')">
+        <div class="map-pin-bubble" style="border-color:#2563EB;color:#2563EB">LD</div>
+        <div class="map-pin-tail" style="background:#2563EB"></div>
+        <div class="map-pin-label">Lucas</div>
+      </div>
+      <div class="map-pin" style="left:80%;top:45%" onclick="showToast('Abrindo perfil do Prof. Sebastião...')">
+        <div class="map-pin-bubble" style="border-color:#0F766E;color:#0F766E">PS</div>
+        <div class="map-pin-tail" style="background:#0F766E"></div>
+        <div class="map-pin-label">Prof. S.</div>
+      </div>
+    </div>
+
+    <!-- LEGENDA -->
+    <div class="map-legend">
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--verde)"></div>Você</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#7C3AED"></div>Culinária</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#EA580C"></div>Reparos</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#2563EB"></div>Design</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#0F766E"></div>Aulas</div>
+    </div>
+
+    <div class="section-title">Vizinhos nos arredores</div>
+
+    <div class="map-vizinho-card" onclick="goTo('screen-perfil-luiza')">
+      <div class="avatar av-roxo" style="width:44px;height:44px;font-size:15px" aria-hidden="true">DL</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Dona Luíza</div>
+        <div class="text-xs text-muted mt-4">🍳 Torta de maçã ⇄ 💻 Suporte técnico</div>
+        <div class="text-xs text-verde mt-4">⭐ 4,9 · 12 trocas</div>
+      </div>
+      <div class="map-distance-badge">~50m</div>
+    </div>
+
+    <div class="map-vizinho-card" onclick="goTo('screen-perfil-lucas')">
+      <div class="avatar av-azul" style="width:44px;height:44px;font-size:15px" aria-hidden="true">LD</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Lucas Drummond</div>
+        <div class="text-xs text-muted mt-4">🎨 Identidade visual ⇄ 🔨 Prateleiras</div>
+        <div class="text-xs text-verde mt-4">⭐ 4,7 · 4 trocas</div>
+      </div>
+      <div class="map-distance-badge">~80m</div>
+    </div>
+
+    <div class="map-vizinho-card" onclick="goTo('screen-perfil-italo')">
+      <div class="avatar av-laranja" style="width:44px;height:44px;font-size:15px" aria-hidden="true">IC</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Ítalo Carvalho</div>
+        <div class="text-xs text-muted mt-4">🔨 Montagem de móveis ⇄ 📊 Excel</div>
+        <div class="text-xs text-verde mt-4">⭐ 5,0 · 7 trocas</div>
+      </div>
+      <div class="map-distance-badge">~120m</div>
+    </div>
+
+    <div class="map-vizinho-card" onclick="showToast('Abrindo perfil do Prof. Sebastião...')">
+      <div class="avatar av-teal" style="width:44px;height:44px;font-size:15px" aria-hidden="true">PS</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Prof. Sebastião</div>
+        <div class="text-xs text-muted mt-4">📚 Inglês ⇄ 💻 Suporte computador</div>
+        <div class="text-xs text-verde mt-4">⭐ 5,0 · 22 trocas</div>
+      </div>
+      <div class="map-distance-badge">~200m</div>
+    </div>
+  </div>
+
+  <div class="bottomnav" role="navigation" aria-label="Menu principal">
+    <button class="bottomnav-item" onclick="goTo('screen-mural')" aria-label="Mural">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Mural
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-mensagens')" aria-label="Mensagens">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Mensagens
+    </button>
+    <button class="bottomnav-item active" aria-label="Maps" aria-current="page">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      Maps
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-ranking')" aria-label="Ranking">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Ranking
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-meuperfil')" aria-label="Meu perfil">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: MENSAGENS (lista)
+══════════════════════ -->
+<div class="screen" id="screen-mensagens">
+  <div class="topbar">
+    <div class="topbar-logo">Vizinhança<span>+</span></div>
+    <button style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--cinza-3)" onclick="showToast('Buscar conversas')" aria-label="Buscar">🔍</button>
+  </div>
+  <div class="content">
+    <!-- Estado de mensagens controlado pelo login (sem toggle manual) -->
+
+    <!-- ESTADO: USUÁRIO EXISTENTE -->
+    <div id="msgs-existente">
+      <div class="section-title">Conversas recentes</div>
+      <div id="lista-conversas">
+        <!-- Conversa 1 - Dona Luíza (com mensagem não lida) -->
+        <div class="conv-item" onclick="abrirChatDireto('luiza')" id="conv-luiza">
+          <div class="conv-avatar-wrap">
+            <div class="avatar av-roxo" style="width:50px;height:50px;font-size:17px" aria-hidden="true">DL</div>
+            <div class="conv-online" aria-label="online"></div>
+          </div>
+          <div class="conv-info">
+            <div class="conv-top">
+              <span class="conv-name">Dona Luíza</span>
+              <span class="conv-time">13:50</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="conv-preview" id="preview-luiza">Combinado! Até já 😊</span>
+              <span class="conv-unread-badge" id="badge-luiza">1</span>
+            </div>
+          </div>
+        </div>
+        <!-- Conversa 2 - Ítalo -->
+        <div class="conv-item" onclick="abrirChatDireto('italo')" id="conv-italo">
+          <div class="conv-avatar-wrap">
+            <div class="avatar av-laranja" style="width:50px;height:50px;font-size:17px" aria-hidden="true">IC</div>
+          </div>
+          <div class="conv-info">
+            <div class="conv-top">
+              <span class="conv-name">Ítalo Carvalho</span>
+              <span class="conv-time">Ontem</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="conv-preview">Ótimo! Posso te ajudar com as prateleiras</span>
+            </div>
+          </div>
+        </div>
+        <!-- Conversa 3 - Lucas -->
+        <div class="conv-item" onclick="abrirChatDireto('lucas')" id="conv-lucas">
+          <div class="conv-avatar-wrap">
+            <div class="avatar av-azul" style="width:50px;height:50px;font-size:17px" aria-hidden="true">LD</div>
+          </div>
+          <div class="conv-info">
+            <div class="conv-top">
+              <span class="conv-name">Lucas Drummond</span>
+              <span class="conv-time">Segunda</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="conv-preview">Você: Valeu pelo design! 🎨</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTADO: USUÁRIO NOVO -->
+    <div id="msgs-novo" style="display:none">
+      <div class="onboard-card">
+        <div style="font-size:48px">💬</div>
+        <div style="font-size:17px;font-weight:800;margin-top:10px">Nenhuma conversa ainda</div>
+        <div class="text-sm text-muted mt-8">Suas mensagens com vizinhos aparecerão aqui. Para começar, visite o mural e envie uma mensagem para alguém!</div>
+      </div>
+
+      <div class="section-title">Por onde começar?</div>
+      <div class="onboard-step" onclick="goTo('screen-mural')">
+        <div class="onboard-step-num">1</div>
+        <div>
+          <div class="font-semibold text-sm">Explore o Mural</div>
+          <div class="text-xs text-muted mt-4">Veja o que os vizinhos estão oferecendo e precisando</div>
+        </div>
+      </div>
+      <div class="onboard-step" onclick="goTo('screen-mural')">
+        <div class="onboard-step-num">2</div>
+        <div>
+          <div class="font-semibold text-sm">Abra o perfil de um vizinho</div>
+          <div class="text-xs text-muted mt-4">Clique em qualquer card do mural para ver o perfil completo</div>
+        </div>
+      </div>
+      <div class="onboard-step">
+        <div class="onboard-step-num">3</div>
+        <div>
+          <div class="font-semibold text-sm">Envie uma mensagem</div>
+          <div class="text-xs text-muted mt-4">Clique em "Enviar mensagem" para iniciar uma conversa</div>
+        </div>
+      </div>
+      <button class="btn btn-primary mt-16" onclick="goTo('screen-mural')">Ir ao mural agora →</button>
+    </div>
+  </div>
+
+  <div class="bottomnav" role="navigation" aria-label="Menu principal">
+    <button class="bottomnav-item" onclick="goTo('screen-mural')" aria-label="Mural">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Mural
+    </button>
+    <button class="bottomnav-item active" aria-label="Mensagens" aria-current="page">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Mensagens
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-maps')" aria-label="Maps">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      Maps
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-ranking')" aria-label="Ranking">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Ranking
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-meuperfil')" aria-label="Meu perfil">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: CHAT INDIVIDUAL
+══════════════════════ -->
+<div class="screen" id="screen-chat-individual">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mensagens')" aria-label="Voltar às mensagens">←</button>
+    <div class="flex items-center gap-8">
+      <div class="avatar" id="chat-ind-avatar" style="width:32px;height:32px;font-size:12px" aria-hidden="true">??</div>
+      <div>
+        <div class="font-semibold" style="font-size:14px" id="chat-ind-nome">Vizinho</div>
+        <div class="text-xs text-verde" id="chat-ind-status">● online agora</div>
+      </div>
+    </div>
+    <button style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--cinza-3)" onclick="showToast('Opções do chat')" aria-label="Mais opções">⋮</button>
+  </div>
+  <div class="content" style="padding-bottom:80px" id="chat-ind-content">
+    <!-- conteúdo dinâmico -->
+  </div>
+  <div style="position:fixed;bottom:0;left:0;right:0;background:var(--branco);border-top:1px solid var(--cinza-2);padding:10px 16px;display:flex;gap:8px;align-items:center;z-index:100">
+    <input class="form-input" style="flex:1;margin:0" type="text" placeholder="Escreva uma mensagem..." id="chat-ind-input" aria-label="Mensagem">
+    <button class="btn btn-primary" style="width:auto;padding:12px 16px" onclick="enviarMensagemIndividual()" aria-label="Enviar">➤</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════
+     TELA: FEEDBACK
+══════════════════════ -->
+<div class="screen" id="screen-feedback">
+  <div class="topbar">
+    <div style="width:36px"></div>
+    <span class="topbar-title">Avaliar troca</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div style="text-align:center; padding:24px 0 8px">
+      <div style="font-size:48px" aria-hidden="true">🌟</div>
+      <div style="font-size:20px;font-weight:800;margin-top:8px">Como foi a troca?</div>
+      <div class="text-sm text-muted mt-4">Sua avaliação constrói a reputação da comunidade</div>
+    </div>
+
+    <div class="section-title">Avalie Dona Luíza</div>
+    <div class="card" style="text-align:center">
+      <div class="avatar av-roxo" style="width:52px;height:52px;font-size:18px;margin:0 auto 10px" aria-hidden="true">DL</div>
+      <div class="font-semibold">Dona Luíza</div>
+      <div style="font-size:36px;cursor:pointer;letter-spacing:4px;margin:10px 0" id="star-row" role="radiogroup" aria-label="Nota de 1 a 5 estrelas">
+        <span onclick="setStar(1)" role="radio" aria-label="1 estrela" tabindex="0" style="color:var(--ambar-xp)">★</span>
+        <span onclick="setStar(2)" role="radio" aria-label="2 estrelas" tabindex="0" style="color:var(--ambar-xp)">★</span>
+        <span onclick="setStar(3)" role="radio" aria-label="3 estrelas" tabindex="0" style="color:var(--ambar-xp)">★</span>
+        <span onclick="setStar(4)" role="radio" aria-label="4 estrelas" tabindex="0" style="color:var(--ambar-xp)">★</span>
+        <span onclick="setStar(5)" role="radio" aria-label="5 estrelas" tabindex="0" style="color:var(--ambar-xp)">★</span>
+      </div>
+      <div class="text-xs text-muted" id="star-label">5 estrelas — Excelente!</div>
+    </div>
+
+    <div class="section-title">Conceda um selo de reconhecimento</div>
+    <div class="flex gap-8" style="flex-wrap:wrap">
+      <button class="seal" id="seal1" onclick="selectSeal('seal1')" aria-pressed="false"><span class="seal-icon">❤️</span>Muito gentil</button>
+      <button class="seal" id="seal2" onclick="selectSeal('seal2')" aria-pressed="false"><span class="seal-icon">⚡</span>Pontual</button>
+      <button class="seal" id="seal3" onclick="selectSeal('seal3')" aria-pressed="false"><span class="seal-icon">🤝</span>Confiável</button>
+      <button class="seal" id="seal4" onclick="selectSeal('seal4')" aria-pressed="false"><span class="seal-icon">🍳</span>Mestre Cozinheira</button>
+    </div>
+
+    <div class="section-title">Comentário (opcional)</div>
+    <div class="form-group">
+      <textarea class="form-input" rows="3" placeholder="Conte como foi a experiência com este vizinho..."></textarea>
+    </div>
+
+    <div class="alert alert-info">
+      <span>🎁</span>
+      <div class="text-sm">Ao avaliar, você ganha <strong>+30 XP</strong> e ajuda a comunidade!</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goTo('screen-levelup')">Enviar avaliação</button>
+    <button class="btn btn-secondary mt-8" onclick="showToast('Você pode avaliar depois em Minhas trocas')">Avaliar depois</button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: LEVEL UP
+══════════════════════ -->
+<div class="screen" id="screen-levelup">
+  <div class="topbar">
+    <div style="width:36px"></div>
+    <span class="topbar-title">Conquista!</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content" style="text-align:center">
+    <div style="padding-top:48px">
+      <div style="font-size:88px; animation: slideUp .4s ease, pulse 1s ease 0.4s 2" aria-hidden="true">🏆</div>
+      <div style="font-size:28px;font-weight:800;color:var(--verde);margin-top:16px">LEVEL UP!</div>
+      <div class="level-badge" style="font-size:16px;padding:12px 24px;display:inline-flex;margin-top:14px">
+        ⭐ Colaborador Bronze
+      </div>
+      <div class="text-sm text-muted mt-16" style="max-width:280px;margin:16px auto 0">
+        Você ganhou <strong style="color:var(--ambar)">+150 XP</strong> e desbloqueou um novo selo!
+      </div>
+
+      <div class="seal" style="display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin:20px auto;padding:18px 24px;font-size:14px;animation: slideUp .5s ease 0.3s backwards">
+        <span style="font-size:40px" aria-hidden="true">🤝</span>
+        Mestre do Suporte
+      </div>
+
+      <div class="card mt-8" style="text-align:left">
+        <div class="text-sm font-semibold mb-8">📊 Seu progresso</div>
+        <div class="confirm-row"><span class="text-muted text-sm">Trocas realizadas</span><span class="font-bold">3</span></div>
+        <div class="confirm-row"><span class="text-muted text-sm">XP total</span><span class="font-bold text-ambar">450 XP</span></div>
+        <div class="confirm-row"><span class="text-muted text-sm">Nível atual</span><span class="font-bold">Colaborador Bronze</span></div>
+        <div class="xp-bar-wrap" style="margin-top:10px"><div class="xp-bar-fill" style="width:45%"></div></div>
+        <div class="text-xs text-muted mt-4">Próximo nível: Colaborador Prata (1000 XP)</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-24" onclick="goTo('screen-mural')">Voltar ao mural</button>
+    <button class="btn btn-secondary mt-8" onclick="goTo('screen-conquistas')">Ver todas as conquistas</button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA: MEU PERFIL
+══════════════════════ -->
+<div class="screen" id="screen-meuperfil">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar ao mural">←</button>
+    <span class="topbar-title">Meu perfil</span>
+    <button class="btn-sm btn-secondary" style="width:auto;padding:6px 10px;font-size:13px" onclick="showToast('Configurações')" aria-label="Configurações">⚙️</button>
+  </div>
+  <div class="content">
+    <div class="profile-hero" style="margin:0 -16px; border-radius:0 0 20px 20px; text-align:center; padding:28px 16px 32px">
+      <div class="avatar" style="width:80px;height:80px;font-size:28px;margin:0 auto;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.5)" aria-hidden="true" id="perfil-avatar-hero">JM</div>
+      <div style="font-size:22px;font-weight:800;margin-top:12px;color:#fff" id="perfil-nome-hero">João Mendes</div>
+      <div style="font-size:13px;opacity:.8;margin-top:4px;color:#fff">República UFMG</div>
+      <div class="level-badge" style="margin-top:12px" id="perfil-level-badge">🤝 Colaborador Bronze</div>
+    </div>
+
+    <!-- Estado do perfil controlado pelo login (sem toggle manual) -->
+
+    <!-- ESTADO EXISTENTE -->
+    <div id="perfil-existente">
+      <div class="card">
+        <div class="flex justify-between items-center mb-8">
+          <div class="text-sm font-semibold">Pontos de Experiência</div>
+          <div class="text-sm text-ambar font-bold" id="perfil-xp-valor">450 / 1000 XP</div>
+        </div>
+        <div class="xp-bar-wrap" role="progressbar" aria-label="XP">
+          <div class="xp-bar-fill" id="perfil-xp-bar" style="width:45%"></div>
+        </div>
+        <div class="text-xs text-muted mt-4" id="perfil-xp-falta">Faltam 550 XP para o próximo nível</div>
+      </div>
+
+      <div class="flex gap-8 mt-4">
+        <div class="card" style="flex:1;text-align:center;padding:12px">
+          <div style="font-size:22px;font-weight:800;color:var(--verde)" id="perfil-stat-trocas">3</div>
+          <div class="text-xs text-muted">Trocas</div>
+        </div>
+        <div class="card" style="flex:1;text-align:center;padding:12px">
+          <div style="font-size:22px;font-weight:800;color:var(--ambar)" id="perfil-stat-aval">4,8</div>
+          <div class="text-xs text-muted">Avaliação</div>
+        </div>
+        <div class="card" style="flex:1;text-align:center;padding:12px">
+          <div style="font-size:22px;font-weight:800;color:var(--roxo)" id="perfil-stat-selos">2</div>
+          <div class="text-xs text-muted">Selos</div>
+        </div>
+      </div>
+
+      <div class="section-title">Meus selos</div>
+      <div class="flex gap-8" style="flex-wrap:wrap" id="perfil-selos-lista">
+        <div class="seal"><span class="seal-icon">💻</span>Suporte Tech</div>
+        <div class="seal"><span class="seal-icon">🤝</span>Mestre do Suporte</div>
+      </div>
+      <button class="btn btn-secondary btn-sm mt-8" onclick="goTo('screen-conquistas')">Ver todas as conquistas →</button>
+
+      <div class="section-title">Minhas habilidades</div>
+      <div class="chip-row" id="perfil-habilidades-lista">
+        <div class="chip selected" style="font-size:13px;cursor:default">💻 Tecnologia</div>
+        <div class="chip selected" style="font-size:13px;cursor:default">📱 Suporte</div>
+      </div>
+
+      <div class="section-title">Minha oferta ativa</div>
+      <div id="perfil-oferta-box">
+        <div class="card" style="background:var(--verde-bg);border-color:#c6e8b3">
+          <div class="match-line" style="background:transparent;padding:0;margin:0 0 10px">
+            <span class="match-pill mp-oferta">Oferece</span>
+            <span class="text-sm">💻 Suporte técnico</span>
+          </div>
+          <div class="match-line" style="background:transparent;padding:0;margin:0">
+            <span class="match-pill mp-demanda">Precisa</span>
+            <span class="text-sm">📚 Aulas de inglês</span>
+          </div>
+        </div>
+        <button class="btn btn-outline mt-4" onclick="goTo('screen-publicar')">Editar oferta</button>
+      </div>
+
+      <div class="section-title">Histórico de trocas</div>
+      <div id="perfil-historico-lista">
+        <div class="card text-sm">
+          <div class="flex justify-between items-center">
+            <span>🍳 Torta de Maçã com Dona Luíza</span>
+            <span class="tag tag-verde" style="font-size:10px">✓</span>
+          </div>
+          <div class="text-xs text-muted mt-4">Jan 2025</div>
+        </div>
+        <div class="card text-sm">
+          <div class="flex justify-between items-center">
+            <span>📚 Aula de inglês com Prof. Sebastião</span>
+            <span class="tag tag-verde" style="font-size:10px">✓</span>
+          </div>
+          <div class="text-xs text-muted mt-4">Dez 2024</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTADO NOVO -->
+    <div id="perfil-novo" style="display:none">
+      <div class="onboard-card mt-8">
+        <div style="font-size:48px">🌱</div>
+        <div style="font-size:17px;font-weight:800;margin-top:10px">Bem-vindo ao Vizinhança+!</div>
+        <div class="text-sm text-muted mt-8">Você ainda não realizou nenhuma troca. Complete seu perfil e comece a se conectar com seus vizinhos!</div>
+        <div class="level-badge" style="margin-top:12px;display:inline-flex">🌱 Vizinho Novo · 50 XP</div>
+      </div>
+
+      <div class="card">
+        <div class="flex justify-between items-center mb-8">
+          <div class="text-sm font-semibold">Seus pontos</div>
+          <div class="text-sm text-ambar font-bold" id="perfil-novo-xp">50 / 100 XP</div>
+        </div>
+        <div class="xp-bar-wrap"><div class="xp-bar-fill" id="perfil-novo-xp-bar" style="width:50%"></div></div>
+        <div class="text-xs text-muted mt-4">Ganhe mais XP para subir de nível!</div>
+      </div>
+
+      <div class="flex gap-8 mt-4">
+        <div class="card" style="flex:1;text-align:center;padding:12px">
+          <div style="font-size:22px;font-weight:800;color:var(--cinza-3)">0</div>
+          <div class="text-xs text-muted">Trocas</div>
+        </div>
+        <div class="card" style="flex:1;text-align:center;padding:12px">
+          <div style="font-size:22px;font-weight:800;color:var(--cinza-3)">—</div>
+          <div class="text-xs text-muted">Avaliação</div>
+        </div>
+        <div class="card" style="flex:1;text-align:center;padding:12px">
+          <div style="font-size:22px;font-weight:800;color:var(--cinza-3)">1</div>
+          <div class="text-xs text-muted">Selos</div>
+        </div>
+      </div>
+
+      <div class="section-title">Selos conquistados</div>
+      <div class="flex gap-8">
+        <div class="seal"><span class="seal-icon">🌱</span>Novo Vizinho</div>
+      </div>
+
+      <div class="section-title">Como ganhar XP?</div>
+      <div class="onboard-step" onclick="goTo('screen-publicar')">
+        <div class="onboard-step-num">+10</div>
+        <div>
+          <div class="font-semibold text-sm">Publicar no mural</div>
+          <div class="text-xs text-muted mt-4">Crie sua primeira oferta ou demanda</div>
+        </div>
+      </div>
+      <div class="onboard-step" onclick="goTo('screen-mural')">
+        <div class="onboard-step-num">+100</div>
+        <div>
+          <div class="font-semibold text-sm">Concluir uma troca</div>
+          <div class="text-xs text-muted mt-4">Realize sua primeira troca com um vizinho</div>
+        </div>
+      </div>
+      <div class="onboard-step">
+        <div class="onboard-step-num">+30</div>
+        <div>
+          <div class="font-semibold text-sm">Avaliar uma troca</div>
+          <div class="text-xs text-muted mt-4">Dê sua opinião após cada troca realizada</div>
+        </div>
+      </div>
+
+      <div class="section-title">Minha oferta</div>
+      <div class="alert alert-info">
+        <span>💡</span>
+        <div class="text-sm">Você ainda não publicou nenhuma oferta. Publique agora e apareça para os vizinhos!</div>
+      </div>
+      <button class="btn btn-primary" onclick="goTo('screen-publicar')">+ Publicar minha primeira oferta</button>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-secondary" style="color:var(--vermelho)" onclick="logout()">Sair da conta</button>
+    <div style="height:8px"></div>
+  </div>
+
+  <div class="bottomnav" role="navigation" aria-label="Menu principal">
+    <button class="bottomnav-item" onclick="goTo('screen-mural')" aria-label="Mural">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Mural
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-mensagens')" aria-label="Mensagens">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Mensagens
+      <span class="nav-badge msg-badge-nav" aria-label="mensagens novas" style="display:none"></span>
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-maps')" aria-label="Maps">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      Maps
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-ranking')" aria-label="Ranking">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Ranking
+    </button>
+    <button class="bottomnav-item active" aria-label="Meu perfil" aria-current="page">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA NOVA: PUBLICAR
+══════════════════════ -->
+<div class="screen" id="screen-publicar">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar">←</button>
+    <span class="topbar-title">Publicar no mural</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div class="mt-16 mb-8">
+      <div style="font-size:20px;font-weight:800">O que você quer publicar?</div>
+      <div class="text-sm text-muted mt-4">Escolha o tipo de publicação</div>
+    </div>
+
+    <div class="flex gap-8">
+      <button class="tipo-btn selected" id="tipo-oferta" onclick="selecionarTipo('oferta')">
+        <span class="tipo-icon">🎁</span>
+        <div class="tipo-label">Oferta</div>
+        <div class="tipo-desc">Ofereço algo e preciso de algo em troca</div>
+      </button>
+      <button class="tipo-btn" id="tipo-demanda" onclick="selecionarTipo('demanda')">
+        <span class="tipo-icon">🙋</span>
+        <div class="tipo-label">Demanda</div>
+        <div class="tipo-desc">Preciso de ajuda e ofereço algo em troca</div>
+      </button>
+    </div>
+
+    <div class="section-title">Categoria</div>
+    <div class="chip-row" id="pub-categorias" role="group" aria-label="Categoria da publicação">
+      <button class="chip" onclick="toggleChip(this)">🍳 Culinária</button>
+      <button class="chip" onclick="toggleChip(this)">💻 Tecnologia</button>
+      <button class="chip" onclick="toggleChip(this)">🌿 Jardinagem</button>
+      <button class="chip" onclick="toggleChip(this)">🔨 Reparos</button>
+      <button class="chip" onclick="toggleChip(this)">🎨 Design</button>
+      <button class="chip" onclick="toggleChip(this)">📚 Aulas</button>
+    </div>
+
+    <div class="section-title">Sua oferta</div>
+    <div class="form-group">
+      <label class="form-label" for="pub-oferta">O que você oferece</label>
+      <input class="form-input" id="pub-oferta" type="text" placeholder="Ex: Torta de maçã caseira, Aula de inglês...">
+    </div>
+
+    <div class="section-title">O que você precisa</div>
+    <div class="form-group">
+      <label class="form-label" for="pub-precisa">O que você quer em troca</label>
+      <input class="form-input" id="pub-precisa" type="text" placeholder="Ex: Suporte técnico, Montagem de móveis...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="pub-desc">Descrição (opcional)</label>
+      <textarea class="form-input" id="pub-desc" rows="2" placeholder="Mais detalhes sobre a troca..."></textarea>
+    </div>
+
+    <div class="alert alert-info">
+      <span>⚡</span>
+      <div class="text-sm">Publicar no mural gera <strong>+10 XP</strong>!</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="publicarOferta()">Publicar no mural</button>
+    <button class="btn btn-secondary mt-8" onclick="goTo('screen-mural')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA NOVA: NOTIFICAÇÕES
+══════════════════════ -->
+<div class="screen" id="screen-notificacoes">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar">←</button>
+    <span class="topbar-title">Notificações</span>
+    <button style="background:none;border:none;color:var(--verde);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onclick="showToast('Todas marcadas como lidas')">Ler todas</button>
+  </div>
+  <div class="content">
+    <div class="mt-16" id="notif-lista">
+      <!-- Notificações renderizadas dinamicamente por renderNotificacoes() -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA NOVA: RANKING
+══════════════════════ -->
+<div class="screen" id="screen-ranking">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-mural')" aria-label="Voltar ao mural">←</button>
+    <span class="topbar-title">Ranking do bairro</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div class="mt-16 mb-8">
+      <div style="font-size:18px;font-weight:800">🏆 Top colaboradores</div>
+      <div class="text-sm text-muted mt-4">Condomínio Solar · Janeiro 2025</div>
+    </div>
+
+    <!-- MEU LUGAR NO RANKING -->
+    <div class="card" style="background:var(--verde-bg);border-color:#c6e8b3;margin-bottom:16px" id="ranking-meu-card">
+      <!-- Renderizado dinamicamente por renderRanking() -->
+    </div>
+
+    <div class="section-title">Classificação geral</div>
+
+    <div class="rank-row">
+      <div class="rank-num rank-1" aria-label="1º lugar">🥇</div>
+      <div class="avatar av-teal" style="width:40px;height:40px;font-size:14px" aria-hidden="true">PS</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Prof. Sebastião</div>
+        <div class="text-xs text-muted">1.840 XP · 22 trocas</div>
+      </div>
+      <div class="level-badge" style="font-size:10px;padding:3px 8px">🏅 Mentor</div>
+    </div>
+
+    <div class="rank-row">
+      <div class="rank-num rank-2" aria-label="2º lugar">🥈</div>
+      <div class="avatar av-roxo" style="width:40px;height:40px;font-size:14px" aria-hidden="true">DL</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Dona Luíza</div>
+        <div class="text-xs text-muted">840 XP · 12 trocas</div>
+      </div>
+      <div class="level-badge" style="font-size:10px;padding:3px 8px">⭐ Lenda</div>
+    </div>
+
+    <div class="rank-row">
+      <div class="rank-num rank-3" aria-label="3º lugar">🥉</div>
+      <div class="avatar av-laranja" style="width:40px;height:40px;font-size:14px" aria-hidden="true">IC</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Ítalo Carvalho</div>
+        <div class="text-xs text-muted">620 XP · 7 trocas</div>
+      </div>
+      <div class="level-badge" style="font-size:10px;padding:3px 8px">🏆 Mestre</div>
+    </div>
+
+    <div class="rank-row">
+      <div class="rank-num" style="color:var(--cinza-3)">4</div>
+      <div class="avatar av-azul" style="width:40px;height:40px;font-size:14px" aria-hidden="true">LD</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">Lucas Drummond</div>
+        <div class="text-xs text-muted">310 XP · 4 trocas</div>
+      </div>
+      <div class="level-badge" style="font-size:10px;padding:3px 8px">🎨 Bronze</div>
+    </div>
+
+    <div class="rank-row" style="background:var(--verde-bg);border-color:#c6e8b3">
+      <div class="rank-num" style="color:var(--verde)">5</div>
+      <div class="avatar av-verde" style="width:40px;height:40px;font-size:14px" aria-hidden="true">JM</div>
+      <div style="flex:1">
+        <div class="font-semibold text-sm">João Mendes <span class="tag tag-verde" style="font-size:9px;padding:2px 6px">você</span></div>
+        <div class="text-xs text-muted">450 XP · 3 trocas</div>
+      </div>
+      <div class="level-badge" style="font-size:10px;padding:3px 8px">🤝 Bronze</div>
+    </div>
+
+    <div class="alert alert-info mt-16">
+      <span>💡</span>
+      <div class="text-sm">Faça mais trocas para subir no ranking e ganhar destaque no mural!</div>
+    </div>
+  </div>
+
+  <div class="bottomnav" role="navigation" aria-label="Menu principal">
+    <button class="bottomnav-item" onclick="goTo('screen-mural')" aria-label="Mural">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Mural
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-mensagens')" aria-label="Mensagens">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Mensagens
+      <span class="nav-badge msg-badge-nav" aria-label="mensagens novas" style="display:none"></span>
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-maps')" aria-label="Maps">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      Maps
+    </button>
+    <button class="bottomnav-item active" aria-label="Ranking" aria-current="page">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Ranking
+    </button>
+    <button class="bottomnav-item" onclick="goTo('screen-meuperfil')" aria-label="Meu perfil">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA NOVA: CONQUISTAS
+══════════════════════ -->
+<div class="screen" id="screen-conquistas">
+  <div class="topbar">
+    <button class="topbar-back" onclick="goTo('screen-meuperfil')" aria-label="Voltar ao perfil">←</button>
+    <span class="topbar-title">Conquistas e selos</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content">
+    <div class="card mt-16" style="text-align:center;background:var(--verde-bg);border-color:#c6e8b3">
+      <div class="font-semibold">Seu nível atual</div>
+      <div class="level-badge" style="margin:8px auto;display:inline-flex">🤝 Colaborador Bronze</div>
+      <div class="xp-bar-wrap" style="margin:8px 0"><div class="xp-bar-fill" style="width:45%"></div></div>
+      <div class="text-xs text-muted">450 / 1000 XP · Próximo: Colaborador Prata</div>
+    </div>
+
+    <div class="section-title">Sistema de níveis</div>
+    <div class="card" style="padding:12px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="flex items-center gap-8">
+          <span style="font-size:18px" aria-hidden="true">🌱</span>
+          <div style="flex:1">
+            <div class="text-sm font-semibold">Vizinho Novo · 0–100 XP</div>
+            <div class="text-xs text-muted">Seu primeiro passo na comunidade</div>
+          </div>
+          <span class="tag tag-verde" style="font-size:10px">✓ Concluído</span>
+        </div>
+        <div class="flex items-center gap-8">
+          <span style="font-size:18px" aria-hidden="true">🤝</span>
+          <div style="flex:1">
+            <div class="text-sm font-semibold">Colaborador Bronze · 100–1000 XP</div>
+            <div class="text-xs text-muted">Participando ativamente da rede</div>
+          </div>
+          <span class="tag tag-ambar" style="font-size:10px">Atual</span>
+        </div>
+        <div class="flex items-center gap-8" style="opacity:.5">
+          <span style="font-size:18px" aria-hidden="true">🥈</span>
+          <div style="flex:1">
+            <div class="text-sm font-semibold">Colaborador Prata · 1000–2500 XP</div>
+            <div class="text-xs text-muted">Referência de confiança no bairro</div>
+          </div>
+          <span class="tag tag-cinza" style="font-size:10px">Bloqueado</span>
+        </div>
+        <div class="flex items-center gap-8" style="opacity:.5">
+          <span style="font-size:18px" aria-hidden="true">🏆</span>
+          <div style="flex:1">
+            <div class="text-sm font-semibold">Mestre das Trocas · 2500–5000 XP</div>
+            <div class="text-xs text-muted">Pilar da comunidade local</div>
+          </div>
+          <span class="tag tag-cinza" style="font-size:10px">Bloqueado</span>
+        </div>
+        <div class="flex items-center gap-8" style="opacity:.5">
+          <span style="font-size:18px" aria-hidden="true">⭐</span>
+          <div style="flex:1">
+            <div class="text-sm font-semibold">Lenda da Vizinhança · 5000+ XP</div>
+            <div class="text-xs text-muted">O mais alto reconhecimento da comunidade</div>
+          </div>
+          <span class="tag tag-cinza" style="font-size:10px">Bloqueado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Selos conquistados (2)</div>
+    <div class="flex gap-8" style="flex-wrap:wrap">
+      <div class="seal"><span class="seal-icon">💻</span>Suporte Tech</div>
+      <div class="seal"><span class="seal-icon">🤝</span>Mestre do Suporte</div>
+    </div>
+
+    <div class="section-title">Selos disponíveis para conquistar</div>
+    <div class="conquista-card">
+      <div class="conquista-icon conquista-locked">🍳</div>
+      <div>
+        <div class="font-semibold text-sm">Mestre Cozinheiro</div>
+        <div class="text-xs text-muted mt-4">Faça 3 trocas na categoria Culinária</div>
+        <div class="text-xs text-verde mt-4">0 / 3 trocas</div>
+      </div>
+    </div>
+    <div class="conquista-card">
+      <div class="conquista-icon conquista-locked">🌿</div>
+      <div>
+        <div class="font-semibold text-sm">Mão Verde</div>
+        <div class="text-xs text-muted mt-4">Compartilhe pelo menos 1 planta ou muda</div>
+        <div class="text-xs text-verde mt-4">0 / 1 troca</div>
+      </div>
+    </div>
+    <div class="conquista-card">
+      <div class="conquista-icon conquista-locked">🏅</div>
+      <div>
+        <div class="font-semibold text-sm">Mentor Comunitário</div>
+        <div class="text-xs text-muted mt-4">Alcance 20 trocas e avaliação ≥ 4,5 estrelas</div>
+        <div class="text-xs text-verde mt-4">3 / 20 trocas · ⭐ 4,8</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-8">
+      <span>💡</span>
+      <div class="text-sm">Cada troca concluída vale <strong>+100 XP</strong>. Cada avaliação enviada vale <strong>+30 XP</strong>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     TELA NOVA: DENUNCIA ENVIADA
+══════════════════════ -->
+<div class="screen" id="screen-denuncia-enviada">
+  <div class="topbar">
+    <div style="width:36px"></div>
+    <span class="topbar-title">Denúncia enviada</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="content" style="text-align:center">
+    <div style="padding-top:60px">
+      <div style="font-size:72px" aria-hidden="true">🛡️</div>
+      <div style="font-size:22px;font-weight:800;margin-top:16px">Denúncia registrada</div>
+      <div class="text-sm text-muted mt-8" style="max-width:280px;margin:8px auto 0">
+        Nossa equipe de moderação analisará seu relato em até 48 horas.
+      </div>
+    </div>
+
+    <div class="card mt-24" style="text-align:left">
+      <div class="text-sm font-semibold mb-8">O que acontece agora?</div>
+      <div class="flex gap-8 items-center mt-8">
+        <span style="font-size:18px" aria-hidden="true">🔍</span>
+        <div class="text-sm">A moderação avaliará o perfil denunciado</div>
+      </div>
+      <div class="flex gap-8 items-center mt-8">
+        <span style="font-size:18px" aria-hidden="true">📬</span>
+        <div class="text-sm">Você receberá um retorno por notificação</div>
+      </div>
+      <div class="flex gap-8 items-center mt-8">
+        <span style="font-size:18px" aria-hidden="true">🚫</span>
+        <div class="text-sm">Denúncias graves podem suspender o usuário</div>
+      </div>
+    </div>
+
+    <div class="alert alert-warn mt-8" style="text-align:left">
+      <span>⚠️</span>
+      <div class="text-sm">Se você se sentiu em perigo, entre em contato com as autoridades locais imediatamente.</div>
+    </div>
+
+    <button class="btn btn-primary mt-16" onclick="goTo('screen-mural')">Voltar ao mural</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   VIZINHANÇA+ · PROTÓTIPO IHC · UFMG · GRUPO 3
+   ══════════════════════════════════════════════════════════════════
+
+   DOCUMENTAÇÃO DA SIMULAÇÃO
+   ─────────────────────────
+   Este protótipo simula dois tipos distintos de usuário:
+
+   1. USUÁRIO ANTIGO (pré-cadastrado)
+      Contas que já existem na simulação com histórico completo.
+      E-mails aceitos no login:
+        · joao@vizinhanca.app  / senha123
+        · maria@vizinhanca.app / senha123
+      Ao entrar com essas contas o sistema carrega:
+        · XP acumulado e nível
+        · Selos conquistados
+        · Histórico de trocas
+        · Conversas existentes com mensagens reais
+        · Notificações pendentes
+        · Badge de mensagem não lida
+        · Match sugerido no mural
+
+   2. USUÁRIO NOVO (criado pelo fluxo de cadastro)
+      Conta criada na sessão atual. Inicia com:
+        · XP = 0 (ganha 50 XP de boas-vindas automaticamente)
+        · Nível: Vizinho Novo
+        · 1 selo: "Novo Vizinho"
+        · Nenhuma troca, avaliação, conversa ou notificação
+        · Telas exibem estado vazio com orientações de primeiro acesso
+
+   FLUXO DE LOGIN
+   ──────────────
+   · fazerLogin() verifica o e-mail contra CONTAS_PRE_CADASTRADAS
+   · Se encontrar → carregaDadosExistente() → estado existente
+   · Se não encontrar mas usuarioCadastrado bater → carregaDadosNovo()
+   · Se nada bater → exibe erro
+
+   FLUXO DE CADASTRO
+   ─────────────────
+   · finalizarCadastro() cria usuarioCadastrado com tipoUsuario = 'novo'
+   · Redireciona para login onde o usuário entra com suas credenciais
+   · Login detecta tipo 'novo' e chama carregaDadosNovo()
+
+   SISTEMA DE MENSAGENS
+   ────────────────────
+   · conversasAtivas: objeto mutável em memória (estado da sessão)
+   · CONVERSAS_EXISTENTE: dados simulados das contas pré-cadastradas
+   · Usuário novo começa com conversasAtivas = {} (vazio)
+   · abrirConversa(btn): cria ou abre conversa, sempre vai para msgs-existente
+   · renderListaConversas(): re-renderiza a lista no DOM
+
+   GAMIFICAÇÃO
+   ───────────
+   · Usuário antigo: xp=450, nivel='Colaborador Bronze', 2 selos, 3 trocas
+   · Usuário novo:   xp=50,  nivel='Vizinho Novo', 1 selo, 0 trocas
+
+══════════════════════════════════════════════════════════════════ */
+
+// ══════════════════════════════════════════════════════════════
+// DADOS SIMULADOS — CONTAS PRÉ-CADASTRADAS
+// ══════════════════════════════════════════════════════════════
+
+const CONTAS_PRE_CADASTRADAS = {
+  'joao@vizinhanca.app': {
+    senha: 'senha123',
+    nome: 'João Mendes',
+    iniciais: 'JM',
+    bairro: 'República UFMG',
+    xp: 450,
+    xpMax: 1000,
+    nivel: '🤝 Colaborador Bronze',
+    nivelSlug: 'bronze',
+    trocas: 3,
+    avaliacao: '4,8',
+    selos: [
+      { icon: '💻', nome: 'Suporte Tech' },
+      { icon: '🤝', nome: 'Mestre do Suporte' }
+    ],
+    habilidades: ['💻 Tecnologia', '📱 Suporte'],
+    oferta: { oferece: '💻 Suporte técnico', precisa: '📚 Aulas de inglês' },
+    historico: [
+      { desc: '🍳 Torta de Maçã com Dona Luíza', data: 'Jan 2025' },
+      { desc: '📚 Aula de inglês com Prof. Sebastião', data: 'Dez 2024' },
+      { desc: '🔨 Ajuda com montagem com Ítalo', data: 'Nov 2024' }
+    ],
+    notificacoes: [
+      { icone: '✅', bg: 'var(--verde-bg)', titulo: 'Proposta aceita!', texto: 'Dona Luíza aceitou sua proposta de troca. Confirme os detalhes no chat.', tempo: 'há 5 min', unread: true, acao: "abrirChatDireto('luiza');goTo('screen-mensagens')" },
+      { icone: '🏆', bg: 'var(--ambar-claro)', titulo: 'Você subiu de nível!', texto: 'Parabéns! Você alcançou o nível "Colaborador Bronze".', tempo: 'há 30 min', unread: true, acao: "goTo('screen-levelup')" },
+      { icone: '⭐', bg: '#EFF6FF', titulo: 'Nova avaliação recebida', texto: 'Lucas Drummond te avaliou com 5 estrelas e o selo "Confiável".', tempo: 'há 2h', unread: false, acao: "showToast('Avaliação de Lucas Drummond')" },
+      { icone: '✨', bg: 'var(--verde-bg)', titulo: 'Match sugerido!', texto: 'Prof. Sebastião oferece aulas de inglês — exatamente o que você procura!', tempo: 'há 3h', unread: false, acao: "goTo('screen-mural')" },
+      { icone: '🏘️', bg: 'var(--cinza-1)', titulo: 'Bem-vindo ao Vizinhança+!', texto: 'Você ganhou 50 XP de boas-vindas e o selo "Novo Vizinho".', tempo: 'há 3 dias', unread: false, acao: "showToast('Boas-vindas!')" }
+    ],
+    conversas: {
+      luiza: {
+        nome: 'Dona Luíza', avatar: 'DL', color: 'av-roxo', online: true,
+        mensagens: [
+          { de: 'them', texto: 'Olá João! Vi sua proposta e adorei! Posso sim te ajudar com a TV amanhã 🙂', hora: '13:42' },
+          { de: 'me', texto: 'Ótimo, Dona Luíza! Posso ir às 15h no hall. Funciona pra você?', hora: '13:45' },
+          { de: 'them', texto: 'Perfeito! E trago a torta de maçã fresquinha 🍎', hora: '13:47' },
+          { de: 'them', texto: 'Me avisa quando estiver chegando!', hora: '13:47' },
+          { de: 'me', texto: 'Combinado! Até já 😊', hora: '13:50' }
+        ],
+        proposta: true, dataEncontro: 'hoje às 15h', localEncontro: 'Hall do condomínio',
+        ultimaMensagem: 'Combinado! Até já 😊', hora: '13:50', unread: 1
+      },
+      italo: {
+        nome: 'Ítalo Carvalho', avatar: 'IC', color: 'av-laranja', online: false,
+        mensagens: [
+          { de: 'me', texto: 'Oi Ítalo! Vi que você monta móveis. Preciso de ajuda com um guarda-roupas.', hora: '10:20' },
+          { de: 'them', texto: 'Oi! Claro, posso ajudar. Tenho disponibilidade na semana que vem.', hora: '10:35' },
+          { de: 'me', texto: 'Perfeito! Em troca posso te ajudar com o Excel.', hora: '10:45' },
+          { de: 'them', texto: 'Ótimo! Posso te ajudar com as prateleiras também!', hora: '10:50' },
+          { de: 'me', texto: 'Perfeito, quando você pode?', hora: '11:00' },
+          { de: 'them', texto: 'Semana que vem posso. Te aviso 👍', hora: '11:05' }
+        ],
+        proposta: false,
+        ultimaMensagem: 'Semana que vem posso. Te aviso 👍', hora: 'Ontem', unread: 0
+      },
+      lucas: {
+        nome: 'Lucas Drummond', avatar: 'LD', color: 'av-azul', online: false,
+        mensagens: [
+          { de: 'them', texto: 'Oi! Vi que você precisa de design. Posso criar uma logo simples em troca de ajuda técnica?', hora: 'Seg' },
+          { de: 'me', texto: 'Claro! Preciso de suporte no meu notebook.', hora: 'Seg' },
+          { de: 'them', texto: 'Combinado! Mando o logo em 2 dias 🎨', hora: 'Seg' },
+          { de: 'me', texto: 'Valeu pelo design! 🎨', hora: 'Seg' }
+        ],
+        proposta: false,
+        ultimaMensagem: 'Você: Valeu pelo design! 🎨', hora: 'Segunda', unread: 0
+      }
+    },
+    rankingPos: 5,
+    rankingXP: '450 XP · 3 trocas'
+  },
+
+  'maria@vizinhanca.app': {
+    senha: 'senha123',
+    nome: 'Maria Santos',
+    iniciais: 'MS',
+    bairro: 'Condomínio Solar, Ap. 105',
+    xp: 720,
+    xpMax: 1000,
+    nivel: '🤝 Colaborador Bronze',
+    nivelSlug: 'bronze',
+    trocas: 6,
+    avaliacao: '4,9',
+    selos: [
+      { icon: '🌿', nome: 'Mão Verde' },
+      { icon: '🤝', nome: 'Vizinha Solidária' },
+      { icon: '⚡', nome: 'Pontual' }
+    ],
+    habilidades: ['🌿 Jardinagem', '🍳 Culinária'],
+    oferta: { oferece: '🌿 Mudas de plantas', precisa: '💻 Suporte técnico' },
+    historico: [
+      { desc: '🌿 Mudas de alecrim com Dona Luíza', data: 'Jan 2025' },
+      { desc: '🍳 Aula de culinária com Dona Luíza', data: 'Dez 2024' },
+      { desc: '🔨 Montagem de prateleiras com Ítalo', data: 'Nov 2024' },
+      { desc: '📚 Aula de inglês com Prof. Sebastião', data: 'Out 2024' },
+      { desc: '🎨 Logo da horta com Lucas', data: 'Set 2024' },
+      { desc: '💻 Suporte técnico com João', data: 'Ago 2024' }
+    ],
+    notificacoes: [
+      { icone: '✨', bg: 'var(--verde-bg)', titulo: 'Match sugerido!', texto: 'Ítalo Carvalho pode montar seus móveis novos em troca de aulas de culinária!', tempo: 'há 1h', unread: true, acao: "goTo('screen-perfil-italo')" },
+      { icone: '⭐', bg: '#EFF6FF', titulo: 'Nova avaliação recebida', texto: 'Prof. Sebastião te avaliou com 5 estrelas e o selo "Mão Verde".', tempo: 'há 4h', unread: false, acao: "showToast('Avaliação do Prof. Sebastião')" },
+      { icone: '🏘️', bg: 'var(--cinza-1)', titulo: 'Bem-vindo ao Vizinhança+!', texto: 'Você ganhou 50 XP de boas-vindas e o selo "Novo Vizinho".', tempo: 'há 3 meses', unread: false, acao: "showToast('Boas-vindas!')" }
+    ],
+    conversas: {
+      luiza: {
+        nome: 'Dona Luíza', avatar: 'DL', color: 'av-roxo', online: true,
+        mensagens: [
+          { de: 'them', texto: 'Oi Maria! Tenho umas mudas de manjericão sobrando, quer?', hora: '09:10' },
+          { de: 'me', texto: 'Adorei! Posso te dar uma aula de culinária em troca 🍳', hora: '09:20' },
+          { de: 'them', texto: 'Perfeito! Sábado de manhã funciona pra você?', hora: '09:22' },
+          { de: 'me', texto: 'Sim! Combinado 😊', hora: '09:25' }
+        ],
+        proposta: false,
+        ultimaMensagem: 'Sim! Combinado 😊', hora: '09:25', unread: 0
+      }
+    },
+    rankingPos: 4,
+    rankingXP: '720 XP · 6 trocas'
+  }
+};
+
+// ══════════════════════════════════════════════════════════════
+// ESTADO GLOBAL DA SESSÃO
+// ══════════════════════════════════════════════════════════════
+let usuarioCadastrado = null;   // conta criada nesta sessão (fluxo cadastro)
+let usuarioLogado = null;       // dados do usuário atualmente logado
+let tipoUsuario = null;         // 'existente' | 'novo'
+let conversasAtivas = {};       // cópia mutável das conversas (em memória)
+let chatAtual = null;
+let cadStepAtual = 1;
+let selectedStars = 5;
+let selectedSeal = null;
+let filtroAtivo = 'todos';
+
+const starLabels = ['', '1 estrela — Ruim', '2 estrelas — Regular', '3 estrelas — Bom', '4 estrelas — Ótimo', '5 estrelas — Excelente!'];
+
+// ══════════════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+  const t = document.getElementById(id);
+  if (t) { t.style.display = 'flex'; t.classList.add('active'); window.scrollTo(0, 0); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CARREGAMENTO DE DADOS POR TIPO DE USUÁRIO
+// ══════════════════════════════════════════════════════════════
+
+function carregaDadosExistente(dados) {
+  tipoUsuario = 'existente';
+  usuarioLogado = dados;
+  // Copia profunda das conversas para estado mutável
+  conversasAtivas = JSON.parse(JSON.stringify(dados.conversas));
+
+  // Topbar do mural
+  document.getElementById('mural-avatar').textContent = dados.iniciais;
+  const h = new Date().getHours();
+  const saudacao = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  document.getElementById('mural-saudacao').textContent = saudacao + ', ' + dados.nome.split(' ')[0] + '! ' + (h < 12 ? '☀️' : h < 18 ? '🌤️' : '🌙');
+  document.getElementById('mural-subtitulo').textContent = '3 conexões sugeridas perto de você';
+
+  // Notif dot e match alert visíveis
+  const dot = document.getElementById('mural-notif-dot');
+  if (dot) dot.style.display = '';
+  const match = document.getElementById('match-alert');
+  if (match) match.style.display = '';
+
+  // Badge de mensagem não lida — sincroniza todos os bottomnavs
+  syncMsgBadges();
+
+  // Perfil
+  document.getElementById('perfil-avatar-hero').textContent = dados.iniciais;
+  document.getElementById('perfil-nome-hero').textContent = dados.nome;
+  renderPerfilExistente(dados);
+
+  // Notificações e ranking
+  renderNotificacoes(dados.notificacoes);
+  renderRanking(dados);
+
+  // Mensagens: mostra lista populada
+  renderListaConversas();
+  document.getElementById('msgs-existente').style.display = 'block';
+  document.getElementById('msgs-novo').style.display = 'none';
+}
+
+function carregaDadosNovo(nome, iniciais) {
+  tipoUsuario = 'novo';
+  conversasAtivas = {};
+  usuarioLogado = {
+    nome, iniciais, bairro: 'Sem bairro cadastrado',
+    xp: 50, xpMax: 100, nivel: '🌱 Vizinho Novo',
+    trocas: 0, avaliacao: '—',
+    selos: [{ icon: '🌱', nome: 'Novo Vizinho' }],
+    habilidades: [],
+    oferta: null,
+    historico: [],
+    notificacoes: [
+      { icone: '🏘️', bg: 'var(--cinza-1)', titulo: 'Bem-vindo ao Vizinhança+!', texto: 'Você ganhou 50 XP de boas-vindas e o selo "Novo Vizinho". Explore o mural para fazer sua primeira troca!', tempo: 'agora', unread: true, acao: "showToast('Boas-vindas!')" }
+    ]
+  };
+
+  // Topbar
+  document.getElementById('mural-avatar').textContent = iniciais;
+  const h = new Date().getHours();
+  const saudacao = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  document.getElementById('mural-saudacao').textContent = saudacao + ', ' + nome.split(' ')[0] + '! 👋';
+  document.getElementById('mural-subtitulo').textContent = 'Explore os vizinhos e faça sua primeira troca!';
+
+  // Sem notif dot, sem match, sem badge
+  const dot = document.getElementById('mural-notif-dot');
+  if (dot) dot.style.display = 'none';
+  const match = document.getElementById('match-alert');
+  if (match) match.style.display = 'none';
+  syncMsgBadges();
+
+  // Perfil
+  document.getElementById('perfil-avatar-hero').textContent = iniciais;
+  document.getElementById('perfil-nome-hero').textContent = nome;
+  renderPerfilNovo(usuarioLogado);
+
+  // Notificações (só boas-vindas)
+  renderNotificacoes(usuarioLogado.notificacoes);
+  renderRanking(null);
+
+  // Mensagens: estado vazio
+  document.getElementById('msgs-existente').style.display = 'none';
+  document.getElementById('msgs-novo').style.display = 'block';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER: PERFIL
+// ══════════════════════════════════════════════════════════════
+function renderPerfilExistente(d) {
+  document.getElementById('perfil-level-badge').textContent = d.nivel;
+  document.getElementById('perfil-existente').style.display = 'block';
+  document.getElementById('perfil-novo').style.display = 'none';
+
+  // XP
+  const pct = Math.round((d.xp / d.xpMax) * 100);
+  document.getElementById('perfil-xp-valor').textContent = d.xp + ' / ' + d.xpMax + ' XP';
+  document.getElementById('perfil-xp-bar').style.width = pct + '%';
+  document.getElementById('perfil-xp-falta').textContent = 'Faltam ' + (d.xpMax - d.xp) + ' XP para o próximo nível';
+
+  // Stats
+  document.getElementById('perfil-stat-trocas').textContent = d.trocas;
+  document.getElementById('perfil-stat-aval').textContent = d.avaliacao;
+  document.getElementById('perfil-stat-selos').textContent = d.selos.length;
+
+  // Selos
+  const selosEl = document.getElementById('perfil-selos-lista');
+  selosEl.innerHTML = d.selos.map(s => '<div class="seal"><span class="seal-icon">' + s.icon + '</span>' + s.nome + '</div>').join('');
+
+  // Habilidades
+  const habEl = document.getElementById('perfil-habilidades-lista');
+  habEl.innerHTML = d.habilidades.length
+    ? d.habilidades.map(h => '<div class="chip selected" style="font-size:13px;cursor:default">' + h + '</div>').join('')
+    : '<div class="text-sm text-muted">Nenhuma habilidade cadastrada</div>';
+
+  // Oferta
+  const ofertaEl = document.getElementById('perfil-oferta-box');
+  if (d.oferta) {
+    ofertaEl.innerHTML = '<div class="card" style="background:var(--verde-bg);border-color:#c6e8b3"><div class="match-line" style="background:transparent;padding:0;margin:0 0 10px"><span class="match-pill mp-oferta">Oferece</span><span class="text-sm">' + d.oferta.oferece + '</span></div><div class="match-line" style="background:transparent;padding:0;margin:0"><span class="match-pill mp-demanda">Precisa</span><span class="text-sm">' + d.oferta.precisa + '</span></div></div><button class="btn btn-outline mt-4" onclick="goTo(\'screen-publicar\')">Editar oferta</button>';
+  } else {
+    ofertaEl.innerHTML = '<div class="alert alert-info"><span>💡</span><div class="text-sm">Você ainda não tem oferta ativa.</div></div><button class="btn btn-primary" onclick="goTo(\'screen-publicar\')">+ Publicar oferta</button>';
+  }
+
+  // Histórico
+  const histEl = document.getElementById('perfil-historico-lista');
+  histEl.innerHTML = d.historico.length
+    ? d.historico.slice(0, 3).map(h => '<div class="card text-sm"><div class="flex justify-between items-center"><span>' + h.desc + '</span><span class="tag tag-verde" style="font-size:10px">✓</span></div><div class="text-xs text-muted mt-4">' + h.data + '</div></div>').join('')
+    : '<div class="text-sm text-muted">Nenhuma troca realizada ainda.</div>';
+}
+
+function renderPerfilNovo(d) {
+  document.getElementById('perfil-level-badge').textContent = '🌱 Vizinho Novo';
+  document.getElementById('perfil-existente').style.display = 'none';
+  document.getElementById('perfil-novo').style.display = 'block';
+  // Atualiza valores do estado novo
+  document.getElementById('perfil-novo-xp').textContent = d.xp + ' / ' + d.xpMax + ' XP';
+  document.getElementById('perfil-novo-xp-bar').style.width = Math.round((d.xp / d.xpMax) * 100) + '%';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER: NOTIFICAÇÕES
+// ══════════════════════════════════════════════════════════════
+function renderNotificacoes(lista) {
+  const el = document.getElementById('notif-lista');
+  if (!el) return;
+  if (!lista || lista.length === 0) {
+    el.innerHTML = '<div class="onboard-card mt-8"><div style="font-size:40px">🔔</div><div style="font-size:17px;font-weight:800;margin-top:10px">Sem notificações</div><div class="text-sm text-muted mt-8">Quando você realizar trocas ou receber avaliações, as notificações aparecerão aqui.</div></div>';
+    return;
+  }
+  el.innerHTML = lista.map(n => {
+    const cls = n.unread ? 'notif-item unread' : 'notif-item';
+    return '<div class="' + cls + '" onclick="' + n.acao + '">' +
+      '<div class="notif-icon" style="background:' + n.bg + '">' + n.icone + '</div>' +
+      '<div style="flex:1"><div class="font-semibold text-sm">' + n.titulo + '</div>' +
+      '<div class="text-xs text-muted mt-4">' + n.texto + '</div>' +
+      '<div class="text-xs text-muted mt-4">' + n.tempo + '</div></div></div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER: RANKING
+// ══════════════════════════════════════════════════════════════
+function renderRanking(d) {
+  const el = document.getElementById('ranking-meu-card');
+  if (!el) return;
+  if (!d) {
+    el.innerHTML = '<div class="text-sm font-semibold mb-8">Sua posição no ranking</div><div class="text-sm text-muted">Realize sua primeira troca para aparecer no ranking!</div>';
+    return;
+  }
+  el.innerHTML = '<div class="text-sm font-semibold mb-8">Sua posição no ranking</div>' +
+    '<div class="flex items-center gap-12">' +
+    '<div style="font-size:24px;font-weight:800;color:var(--verde)">#' + d.rankingPos + '</div>' +
+    '<div class="avatar av-verde" style="width:40px;height:40px;font-size:14px" aria-hidden="true">' + d.iniciais + '</div>' +
+    '<div style="flex:1"><div class="font-semibold text-sm">' + d.nome + '</div>' +
+    '<div class="text-xs text-muted">' + d.rankingXP + '</div></div>' +
+    '<div class="level-badge" style="font-size:11px;padding:4px 8px">' + d.nivel + '</div></div>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER: LISTA DE CONVERSAS
+// ══════════════════════════════════════════════════════════════
+function renderListaConversas() {
+  const lista = document.getElementById('lista-conversas');
+  if (!lista) return;
+  const keys = Object.keys(conversasAtivas);
+  if (keys.length === 0) {
+    lista.innerHTML = '<div class="text-sm text-muted" style="padding:16px 0">Nenhuma conversa ainda.</div>';
+    return;
+  }
+  lista.innerHTML = keys.map(key => {
+    const c = conversasAtivas[key];
+    const badgeHtml = c.unread > 0 ? '<span class="conv-unread-badge" id="badge-' + key + '">' + c.unread + '</span>' : '<span id="badge-' + key + '" style="display:none"></span>';
+    const onlineHtml = c.online ? '<div class="conv-online" aria-label="online"></div>' : '';
+    return '<div class="conv-item" onclick="abrirChatDireto(\'' + key + '\')" id="conv-' + key + '">' +
+      '<div class="conv-avatar-wrap"><div class="avatar ' + c.color + '" style="width:50px;height:50px;font-size:17px" aria-hidden="true">' + c.avatar + '</div>' + onlineHtml + '</div>' +
+      '<div class="conv-info"><div class="conv-top"><span class="conv-name">' + c.nome + '</span><span class="conv-time">' + c.hora + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center"><span class="conv-preview" id="preview-' + key + '">' + c.ultimaMensagem + '</span>' + badgeHtml + '</div></div></div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// CADASTRO
+// ══════════════════════════════════════════════════════════════
+function cadVoltar() {
+  if (cadStepAtual > 1) { cadStep(cadStepAtual - 1); }
+  else { goTo('screen-welcome'); }
+}
+
+function cadStep(n) {
+  cadStepAtual = n;
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('cad-step' + i).style.display = i === n ? 'block' : 'none';
+    document.getElementById('dot' + i).classList.toggle('active', i <= n);
+  }
+  document.getElementById('cad-titulo').textContent = 'Passo ' + n + ' de 3';
+  document.getElementById('cad-prog').style.width = (n / 3 * 100) + '%';
+  window.scrollTo(0, 0);
+}
+
+function validarStep1() {
+  const nome = document.getElementById('cad-nome').value.trim();
+  const email = document.getElementById('cad-email').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+  let ok = true;
+  document.getElementById('err-nome').style.display = !nome ? 'block' : 'none';
+  if (!nome) ok = false;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  document.getElementById('err-email').style.display = !emailOk ? 'block' : 'none';
+  if (!emailOk) ok = false;
+  document.getElementById('err-senha').style.display = senha.length < 6 ? 'block' : 'none';
+  if (senha.length < 6) ok = false;
+  if (ok) cadStep(2);
+}
+
+function validarStep2() {
+  const selecionados = document.querySelectorAll('#habilidades-chips .chip.selected');
+  if (selecionados.length === 0) { showToast('Selecione pelo menos uma habilidade'); return; }
+  cadStep(3);
+}
+
+function finalizarCadastro() {
+  const nome = document.getElementById('cad-nome').value.trim() || 'Usuário';
+  const email = document.getElementById('cad-email').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+  usuarioCadastrado = { nome, email, senha, tipo: 'novo' };
+  showToast('Conta criada! Bem-vindo, ' + nome.split(' ')[0] + '! 🎉');
+  setTimeout(() => goTo('screen-login'), 800);
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════
+function fazerLogin() {
+  const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+  const senhaInput = document.getElementById('login-senha').value;
+  const errEl = document.getElementById('err-login');
+
+  // 1. Verifica se é uma conta pré-cadastrada
+  const contaExistente = CONTAS_PRE_CADASTRADAS[emailInput];
+  if (contaExistente && senhaInput === contaExistente.senha) {
+    errEl.style.display = 'none';
+    carregaDadosExistente(contaExistente);
+    goTo('screen-mural');
+    showToast('Bem-vindo de volta, ' + contaExistente.nome.split(' ')[0] + '! 👋');
+    return;
+  }
+
+  // 2. Verifica se é a conta criada nesta sessão
+  if (usuarioCadastrado && emailInput === usuarioCadastrado.email.toLowerCase() && senhaInput === usuarioCadastrado.senha) {
+    errEl.style.display = 'none';
+    const iniciais = usuarioCadastrado.nome.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+    carregaDadosNovo(usuarioCadastrado.nome, iniciais);
+    goTo('screen-mural');
+    showToast('Bem-vindo, ' + usuarioCadastrado.nome.split(' ')[0] + '! 🎉');
+    return;
+  }
+
+  // 3. Nenhuma conta encontrada
+  errEl.style.display = 'block';
+}
+
+function logout() {
+  usuarioCadastrado = null;
+  usuarioLogado = null;
+  tipoUsuario = null;
+  conversasAtivas = {};
+  chatAtual = null;
+  ['login-email', 'login-senha', 'cad-nome', 'cad-email', 'cad-senha'].forEach(id => {
+    const e = document.getElementById(id);
+    if (e) e.value = '';
+  });
+  cadStep(1);
+  showToast('Você saiu da conta');
+  goTo('screen-welcome');
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHIPS / FILTROS
+// ══════════════════════════════════════════════════════════════
+function toggleChip(el) {
+  el.classList.toggle('selected');
+  el.setAttribute('aria-checked', el.classList.contains('selected') ? 'true' : 'false');
+}
+
+function setFilter(el, cat) {
+  document.querySelectorAll('.chip-row .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  filtroAtivo = cat;
+  filtrarMural();
+}
+
+function filtrarMural() {
+  const busca = (document.getElementById('busca-input')?.value || '').toLowerCase();
+  const cards = document.querySelectorAll('#mural-cards .card');
+  let visiveis = 0;
+  cards.forEach(c => {
+    const txt = c.innerText.toLowerCase();
+    const cat = c.dataset.cat || '';
+    const catOk = filtroAtivo === 'todos' || cat === filtroAtivo;
+    const buscaOk = !busca || txt.includes(busca);
+    const show = catOk && buscaOk;
+    c.style.display = show ? '' : 'none';
+    if (show) visiveis++;
+  });
+  const vazio = document.getElementById('mural-vazio');
+  if (vazio) vazio.style.display = visiveis === 0 ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// STARS / SELOS FEEDBACK
+// ══════════════════════════════════════════════════════════════
+function setStar(n) {
+  selectedStars = n;
+  document.querySelectorAll('#star-row span').forEach((s, i) => {
+    s.style.color = i < n ? 'var(--ambar-xp)' : 'var(--cinza-2)';
+  });
+  const lbl = document.getElementById('star-label');
+  if (lbl) lbl.textContent = starLabels[n] || '';
+}
+
+function selectSeal(id) {
+  if (selectedSeal) {
+    const prev = document.getElementById(selectedSeal);
+    if (prev) { prev.classList.remove('selected'); prev.setAttribute('aria-pressed', 'false'); }
+  }
+  selectedSeal = id;
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('selected'); el.setAttribute('aria-pressed', 'true'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SYNC BADGES — atualiza o badge de mensagens em TODOS os navs
+// ══════════════════════════════════════════════════════════════
+function syncMsgBadges() {
+  const total = Object.values(conversasAtivas).reduce((s, c) => s + (c.unread || 0), 0);
+  document.querySelectorAll('.msg-badge-nav').forEach(el => {
+    el.textContent = total > 0 ? total : '';
+    el.style.display = total > 0 ? '' : 'none';
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PUBLICAR OFERTA
+// ══════════════════════════════════════════════════════════════
+function selecionarTipo(tipo) {
+  document.getElementById('tipo-oferta').classList.toggle('selected', tipo === 'oferta');
+  document.getElementById('tipo-demanda').classList.toggle('selected', tipo === 'demanda');
+}
+
+function publicarOferta() {
+  const oferta = document.getElementById('pub-oferta').value.trim();
+  const precisa = document.getElementById('pub-precisa').value.trim();
+  if (!oferta || !precisa) { showToast('Preencha o que você oferece e o que precisa'); return; }
+
+  // Dados do usuário logado para o card
+  const nome    = usuarioLogado ? usuarioLogado.nome    : 'Você';
+  const iniciais = usuarioLogado ? usuarioLogado.iniciais : 'VC';
+  const nivel   = usuarioLogado ? usuarioLogado.nivel   : '';
+
+  // Monta o card com a mesma estrutura dos cards existentes no mural
+  const card = document.createElement('div');
+  card.className = 'card card-clickable';
+  card.setAttribute('role', 'article');
+  card.setAttribute('aria-label', 'Sua publicação');
+  card.innerHTML =
+    '<div class="flex items-center justify-between mb-8">'
+  +   '<div class="flex items-center gap-8">'
+  +     '<div class="avatar av-verde" style="width:44px;height:44px;font-size:16px" aria-hidden="true">' + iniciais + '</div>'
+  +     '<div>'
+  +       '<div class="font-semibold text-sm">' + nome + '</div>'
+  +       '<div class="text-xs text-muted">' + nivel + '</div>'
+  +     '</div>'
+  +   '</div>'
+  +   '<div class="tag tag-verde">OFERTA</div>'
+  + '</div>'
+  + '<div class="match-line">'
+  +   '<span class="match-pill mp-oferta">Oferece</span>'
+  +   '<span style="font-size:13px">' + oferta + '</span>'
+  +   '<span class="match-arrow" aria-hidden="true">⇄</span>'
+  +   '<span class="match-pill mp-demanda">Precisa</span>'
+  +   '<span style="font-size:13px">' + precisa + '</span>'
+  + '</div>'
+  + '<div class="text-sm text-muted">📍 ' + (usuarioLogado ? usuarioLogado.bairro || 'Seu bairro' : 'Seu bairro') + ' · agora</div>';
+
+  // Insere no topo do mural
+  const mural = document.getElementById('mural-cards');
+  if (mural) mural.prepend(card);
+
+  // Limpa os campos do formulário
+  document.getElementById('pub-oferta').value = '';
+  document.getElementById('pub-precisa').value = '';
+  document.getElementById('pub-desc').value = '';
+
+  showToast('Publicado com sucesso! +10 XP 🎉');
+  setTimeout(() => goTo('screen-mural'), 1000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// DENÚNCIA
+// ══════════════════════════════════════════════════════════════
+function abrirDenuncia() { abrirModal('modal-denuncia'); }
+
+function selecionarDenuncia(el) {
+  document.querySelectorAll('.denuncia-opcao').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('denuncia-detalhe').style.display = 'block';
+  document.getElementById('btn-enviar-denuncia').style.display = 'flex';
+}
+
+function enviarDenuncia() {
+  fecharModal('modal-denuncia');
+  goTo('screen-denuncia-enviada');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════════
+function abrirModal(id) {
+  const m = document.getElementById(id);
+  if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+}
+
+function fecharModal(id) {
+  const m = document.getElementById(id);
+  if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) fecharModal(m.id); });
+});
+
+// ══════════════════════════════════════════════════════════════
+// CHAT INDIVIDUAL
+// ══════════════════════════════════════════════════════════════
+function enviarMensagemIndividual() {
+  const input = document.getElementById('chat-ind-input');
+  const txt = input.value.trim();
+  if (!txt || !chatAtual) return;
+  const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (!conversasAtivas[chatAtual]) return;
+  conversasAtivas[chatAtual].mensagens.push({ de: 'me', texto: txt, hora });
+  conversasAtivas[chatAtual].ultimaMensagem = 'Você: ' + txt;
+  conversasAtivas[chatAtual].hora = hora;
+  conversasAtivas[chatAtual].unread = 0;
+  input.value = '';
+  renderizarMensagensChat();
+  const prevEl = document.getElementById('preview-' + chatAtual);
+  if (prevEl) prevEl.textContent = 'Você: ' + txt;
+  showToast('Mensagem enviada!');
+  // Simula resposta
+  setTimeout(() => {
+    if (!conversasAtivas[chatAtual]) return;
+    const respostas = ['Ok! 😊', 'Entendido!', 'Perfeito, combinado! 🤝', 'Até lá! 🙌', 'Ótimo, obrigado!'];
+    const r = respostas[Math.floor(Math.random() * respostas.length)];
+    const h2 = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    conversasAtivas[chatAtual].mensagens.push({ de: 'them', texto: r, hora: h2 });
+    conversasAtivas[chatAtual].ultimaMensagem = r;
+    renderizarMensagensChat();
+    const prevEl2 = document.getElementById('preview-' + chatAtual);
+    if (prevEl2) prevEl2.textContent = r;
+  }, 1200);
+}
+
+function renderizarMensagensChat() {
+  if (!chatAtual) return;
+  const conv = conversasAtivas[chatAtual];
+  if (!conv) return;
+  const container = document.getElementById('chat-ind-content');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // Alerta proposta aceita
+  if (conv.proposta) {
+    const divP = document.createElement('div');
+    divP.className = 'alert alert-success mt-16';
+    divP.innerHTML = '<span>✅</span><div><div class="font-semibold text-sm">Proposta aceita!</div><div class="text-xs mt-4">Encontro: ' + (conv.dataEncontro || 'a combinar') + ' · ' + (conv.localEncontro || 'local a combinar') + '</div></div>';
+    container.appendChild(divP);
+  }
+
+  // Mensagens
+  const chatMsgs = document.createElement('div');
+  chatMsgs.className = 'chat-messages';
+  chatMsgs.setAttribute('role', 'log');
+  chatMsgs.setAttribute('aria-live', 'polite');
+  conv.mensagens.forEach(m => {
+    const isThem = m.de === 'them';
+    const timeDiv = document.createElement('div');
+    timeDiv.className = isThem ? 'bubble-time' : 'bubble-time right';
+    if (!isThem) timeDiv.style.marginTop = '12px';
+    timeDiv.textContent = (isThem ? conv.nome : 'Você') + ' · ' + m.hora;
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'chat-bubble ' + (isThem ? 'bubble-them' : 'bubble-me');
+    if (!isThem) bubbleDiv.style.alignSelf = 'flex-end';
+    bubbleDiv.textContent = m.texto;
+    chatMsgs.appendChild(timeDiv);
+    chatMsgs.appendChild(bubbleDiv);
+  });
+  container.appendChild(chatMsgs);
+
+  const divider = document.createElement('div');
+  divider.className = 'divider';
+  container.appendChild(divider);
+
+  if (conv.proposta) {
+    const actDiv = document.createElement('div');
+    actDiv.innerHTML = '<button class="btn btn-primary" onclick="goTo(\'screen-feedback\')">✅ Confirmar troca realizada</button><button class="btn btn-secondary mt-8" onclick="abrirDenuncia()">⚑ Fazer uma denúncia</button>';
+    container.appendChild(actDiv);
+  }
+
+  setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+}
+
+function abrirChatDireto(id) {
+  // Se o usuário é novo e não tem esta conversa, cria entrada vazia
+  if (!conversasAtivas[id]) return;
+  chatAtual = id;
+  const conv = conversasAtivas[id];
+  // Zera badge
+  conv.unread = 0;
+  const badge = document.getElementById('badge-' + id);
+  if (badge) badge.style.display = 'none';
+  // Atualiza badge total em todos os bottomnavs
+  syncMsgBadges();
+  // Header
+  const avatarEl = document.getElementById('chat-ind-avatar');
+  avatarEl.className = 'avatar ' + conv.color;
+  avatarEl.style.cssText = 'width:32px;height:32px;font-size:12px';
+  avatarEl.textContent = conv.avatar;
+  document.getElementById('chat-ind-nome').textContent = conv.nome;
+  const statusEl = document.getElementById('chat-ind-status');
+  statusEl.textContent = conv.online ? '● online agora' : '● visto recentemente';
+  statusEl.style.color = conv.online ? 'var(--verde)' : 'var(--cinza-3)';
+  renderizarMensagensChat();
+  goTo('screen-chat-individual');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ABRIR CONVERSA A PARTIR DE PERFIL
+// ══════════════════════════════════════════════════════════════
+function abrirConversa(btn) {
+  const nome = btn.dataset.nome;
+  const avatar = btn.dataset.avatar;
+  const color = btn.dataset.color;
+  const map = { 'Dona Luíza': 'luiza', 'Ítalo Carvalho': 'italo', 'Lucas Drummond': 'lucas' };
+  const key = map[nome];
+  if (!key) { showToast('Conversa em breve!'); return; }
+
+  // Se não existe ainda (ex: usuário novo criando primeira conversa), cria entrada vazia
+  if (!conversasAtivas[key]) {
+    conversasAtivas[key] = {
+      nome, avatar, color, online: false,
+      mensagens: [], proposta: false,
+      ultimaMensagem: 'Iniciar conversa...', hora: 'agora', unread: 0
+    };
+  }
+
+  // Garante que a tela de mensagens esteja no estado correto
+  document.getElementById('msgs-existente').style.display = 'block';
+  document.getElementById('msgs-novo').style.display = 'none';
+
+  // Re-renderiza lista para incluir nova conversa
+  renderListaConversas();
+
+  // Abre o chat
+  abrirChatDireto(key);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SENHA VISÍVEL
+// ══════════════════════════════════════════════════════════════
+function toggleSenha(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.getElementById('screen-welcome').style.display = 'flex';
+
+// ══════════════════════════════════════════════════════════════
+// TEMA ESCURO — adicionado sem alterar nenhuma função existente
+// ══════════════════════════════════════════════════════════════
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    html.removeAttribute('data-theme');
+    document.getElementById('theme-switch-label').textContent = 'Escuro';
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    document.getElementById('theme-switch-label').textContent = 'Claro';
+  }
+}
+</script>
+</body>
+</html>
